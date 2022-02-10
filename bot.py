@@ -61,8 +61,6 @@ class CsBot(discord.Client):
         if message.content.startswith('!register'):
             if permissions == 3:
                 await self.start_registration()
-            else:
-                await message.channel.send("You do not have permission to start match registration")
         if message.content.startswith("!maps"):
             if permissions > 1:
                 await message.author.send("You can register preferences here")
