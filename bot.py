@@ -6,6 +6,9 @@ import random
 import re
 import discord
 from pytube import Playlist
+from generic_message_handler import GenericMessageHandler
+from configuration import Configuration
+from match_handler import Registration, RegistrationManager
 '''
 Interface:
 
@@ -25,86 +28,6 @@ Interface:
 - Balanced by rank and map pool
 - Ban order is decided
 '''
-
-
-class Configuration():
-    def __init__(self,owner=None, admin=[], server=None, role=None):
-        self.owner = None
-        self.super_users_id = None
-        self.server = None
-        self.team_role = None
-        self.parseParams(owner,admin,server,role)
-        self.guild = ""
-        self.role = ""
-    
-    def parseParams(self,owner,admin,server,role):
-        self.owner = owner
-        self.super_users_id = admin
-        self.super_users_id.append(self.owner)
-        self.server = server
-        self.team_role = role
-
-
-class Registration():
-    def __init__(self,users,date=None) -> None:
-        self.date = None
-        self.playdate_next(date)
-        self.players = users
-        self.status = False
-
-    def playdate_next(self,date):
-        if date:
-            self.date = date
-        else:
-            playday = "Wednesday"
-            weekdays = {
-                'Monday':0,
-                'Tuesday':1,
-                'Wednesday':2,
-                'Thursday':3,
-                'Friday':4,
-                'Saturday':5,
-                'Sunday':6,
-            }
-            days_in_week = len(weekdays.keys())
-            today = datetime.date.today()
-            days_to = weekdays[playday] - datetime.date.weekday(today)
-            if days_to <= 0: # we are past playday this week
-                days_to += days_in_week
-            self.date =  today + datetime.timedelta(days_to)
-
-    def set_active(self):
-        self.status = True
-
-    def set_passive(self):
-        self.status = False
-
-class RegistrationManager:
-    def __init__(self):
-        self.registration_active = False
-        self.next_match = None
-        self.registration_next = None
-        self.registration_post = None
-        self.my_regex = re.compile("^!registration")
-
-    def method(self, message):
-        if my_regex.match(message.content):
-            pass
-
-class GenericMessageHandler:
-    def __init__(self, command, help_text, response, reply_private=False):
-        self.regex = re.compile(f"^{command}$")
-        self.response = response
-        self.help_text = help_text
-        self.private = reply_private
-
-    async def method(self, message, permissions):
-        if not self.regex.match(message.content):
-            return
-        if self.private:
-            await message.author.send(self.response)
-        else:
-            await message.channel.send(self.response)
 
 
 class CsBot(discord.Client):
