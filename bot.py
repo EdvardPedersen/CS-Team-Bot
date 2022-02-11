@@ -2,18 +2,8 @@
 import pickle
 import datetime
 import random
-try:
-    import discord
-except ImportError as err:
-    module = str(err).split(' ')[-1:][0]
-    print(f"Please consider installing {module} with python -m pip install {module}.py")
-    exit()
-try:
-    from pytube import Playlist
-except ImportError as err:
-    module = str(err).split(' ')[-1:][0]
-    print(f"Please consider installing {module} with python -m pip install {module}")
-    exit()
+import discord
+from pytube import Playlist
 '''
 Interface:
 
@@ -46,22 +36,11 @@ class Configuration():
         self.role = ""
     
     def parseParams(self,owner,admin,server,role):
-        if not owner:
-            self.owner = int(input("Enter your discordID"))
-        else:
-            self.owner = owner
-        
+        self.owner = owner
         self.super_users_id = admin
         self.super_users_id.append(self.owner)
-        if not server:
-            self.server = int(input("Enter serverID"))
-        else:
-            self.server = server
-        
-        if not role:
-            self.role = int(input("Enter roleID"))
-        else:
-            self.team_role = role
+        self.server = server
+        self.team_role = role
 
 
 class Registration():
