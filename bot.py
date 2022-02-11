@@ -1,19 +1,10 @@
+#!/usr/bin/env python3
 
 import pickle
 import datetime
 import random
-try:
-    import discord
-except ImportError as err:
-    module = str(err).split(' ')[-1:][0]
-    print(f"Please consider installing {module} with python -m pip install {module}.py")
-    exit()
-try:
-    from pytube import Playlist
-except ImportError as err:
-    module = str(err).split(' ')[-1:][0]
-    print(f"Please consider installing {module} with python -m pip install {module}")
-    exit()
+import discord
+from pytube import Playlist
 '''
 Interface:
 
@@ -46,22 +37,11 @@ class Configuration():
         self.role = ""
     
     def parseParams(self,owner,admin,server,role):
-        if not owner:
-            self.owner = int(input("Enter your discordID"))
-        else:
-            self.owner = owner
-        
+        self.owner = owner
         self.super_users_id = admin
         self.super_users_id.append(self.owner)
-        if not server:
-            self.server = int(input("Enter serverID"))
-        else:
-            self.server = server
-        
-        if not role:
-            self.role = int(input("Enter roleID"))
-        else:
-            self.team_role = role
+        self.server = server
+        self.team_role = role
 
 
 class Registration():
@@ -171,6 +151,7 @@ class CsBot(discord.Client):
             if await self.get_permissions(reaction.member) > 1:
                 if reaction.message_id == self.registration_post.id:
                     self.registration_next.players[reaction.user_id] = reaction.member.name
+
             else:
                 await reaction.member.send("You have not signed up for the coming season: <Follow this guideline>")
 
@@ -206,6 +187,12 @@ class CsBot(discord.Client):
                 await message.author.send("Remember to register for this season by reaching out to EdvardP. After that you have to register to the next match by reacting to the register post in #general")
 
         elif isinstance(message.channel,type(self.broadcast_channel)):
+            if message.content == "!signup":
+                await message.author.add_roles(await self.get_role())
+            if message.content == "!optout":
+                await message.author.remove_roles(await self.get_role())
+            if permissions <=1 and message.content.startswith("!"):
+                await message.author.send("You don't have any rights.. !signup for the coming seasong")
             if message.content == "!register":
                 if permissions == 3:
                     if self.registration_active:
@@ -219,12 +206,6 @@ class CsBot(discord.Client):
                         await message.author.send("Registration already active, please cancel previous registration to start a new.")
                     else:
                         await self.registration_start(message.content.removeprefix("!register "))
-
-            if message.content == "!signup":
-                await message.author.add_roles(await self.get_role())
-
-            if message.content == "!optout":
-                await message.author.remove_roles(await self.get_role())
 
             if message.content.startswith("!cancel"):
                 if permissions == 3:
@@ -292,6 +273,7 @@ class CsBot(discord.Client):
                 if permissions > 1:
                     admins = [admin.name for admin in self.get_all_members() if admin.id in self.config.super_users_id]
                     await self.broadcast_channel.send(f"Adminlist: {admins}")
+            
             if message.content == "!shutdown":
                 if permissions == 3:
                     await self.write_state()
@@ -303,6 +285,9 @@ class CsBot(discord.Client):
                 if permissions == 3:
                     await self.reset_state()
                     await message.author.send("CsBot reset state")
+
+
+
 
     async def registration_start(self,date=None):
         '''
@@ -403,7 +388,7 @@ if __name__ == "__main__":
             for admin in f.readlines():
                 admins.append(int(admin))
     except FileNotFoundError:
-        print("No admins added, only owner has access to core features")
+        print("No admins added, ;only owner has access to core features")
 
 
     config = Configuration(154310949195481088,admins, 875845075068944424, 941396110252060702)
