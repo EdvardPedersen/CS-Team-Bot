@@ -3,6 +3,7 @@
 import pickle
 import datetime
 import random
+import re
 import discord
 from pytube import Playlist
 '''
@@ -78,6 +79,34 @@ class Registration():
     def set_passive(self):
         self.status = False
 
+class RegistrationManager:
+    def __init__(self):
+        self.registration_active = False
+        self.next_match = None
+        self.registration_next = None
+        self.registration_post = None
+        self.my_regex = re.compile("^!registration")
+
+    def method(self, message):
+        if my_regex.match(message.content):
+            pass
+
+class GenericMessageHandler:
+    def __init__(self, command, help_text, response, reply_private=False):
+        self.regex = re.compile(f"^{command}$")
+        self.response = response
+        self.help_text = help_text
+        self.private = reply_private
+
+    async def method(self, message, permissions):
+        if not self.regex.match(message.content):
+            return
+        if self.private:
+            await message.author.send(self.response)
+        else:
+            await message.channel.send(self.response)
+
+
 class CsBot(discord.Client):
     def __init__(self, config):
         intents = discord.Intents.default()
@@ -85,40 +114,25 @@ class CsBot(discord.Client):
         intents.reactions = True
         super().__init__(intents=intents)
         self.config = config
-        self.registration_active = False
-        self.next_match = None # this shuld probably be renamed to 'current' or next_match
-        self.registration_next = None
-        self.registration_post = None
         self.broadcast_channel = None
-        self.record = None
-
-    async def set_next_match(self):
-        '''
-        Searches the records for next upcoming match
-        and if any found, sets it as next match
-        '''
-        if self.record:
-            least = list(self.record.keys())[0]
-            for record in self.record.keys():
-                if record >= datetime.date.today() and record < least:
-                    least = record
-            self.next_match = self.record[least]
-
-
-    async def reset_state(self):
-        '''
-        If the server is called before initialization
-        it can enter an invalid state, call this for a soft reset
-        '''
-        self.config = config
-        self.config = config
-        self.registration_active = False
-        self.next_match = None
-        self.registration_next = None
-        self.registration_post = None
-        self.broadcast_channel = None
-        self.record = None
-        await self.on_ready()
+        self.message_handlers = []
+        self.reaction_handlers = []
+        self.message_handlers.append(GenericMessageHandler("!signup", "Sign up for season", "Not implemented", False))
+        self.message_handlers.append(GenericMessageHandler("!optout", "Opt out of the rest of the season", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!register", "Start registration for match", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!next", "Show next match", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!upcoming", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!maps", "Start registration of map preferences", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!purge", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!easterEgg", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!dank", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!setAdmin", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!removeAdmin", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!admins", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!shutdown", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler("!reset", "???", "Not implemented", True))
 
     async def on_ready(self):
         self.config.role = await self.get_role()
@@ -129,242 +143,32 @@ class CsBot(discord.Client):
         if not self.broadcast_channel:
             print("Could not set broadcast_channel")
 
-        await self.read_state()
-        await self.set_next_match()
-        
-        # await self.broadcast_channel.send("Hello, I'm CS-Bot")
-
     async def get_role(self):
         for g in self.guilds:
+            print(g)
             for r in g.roles:
+                print(r)
                 if r.id == self.config.team_role:
                     self.config.guild = g
-                    print(r.members)
+                    print(r)
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        '''
-        Everyone can react to a message, but only registrated team members
-        will be added to the lineup
-        '''
-        if self.registration_active:
-            if await self.get_permissions(reaction.member) > 1:
-                if reaction.message_id == self.registration_post.id:
-                    self.registration_next.players[reaction.user_id] = reaction.member.name
-
-            else:
-                await reaction.member.send("You have not signed up for the coming season: <Follow this guideline>")
+        permissions = await self.get_permissions(message.author)
+        for handler in self.reaction_handlers:
+            await handler.method(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
-        '''
-        This reaction removal does not require permission check as we only care for
-        the registration message and that the reacting people have a given role
-
-        BUT reactions can be added by anyone... so we need it?
-        '''
-        if self.registration_active:
-            if await self.get_permissions(reaction.member) > 1:
-                if reaction.message_id == self.registration_post.id:
-                    self.registration_next.players.pop(reaction.user_id)
+        permissions = await self.get_permissions(message.author)
+        for handler in self.reaction_handlers:
+            await handler.method(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
             return
         permissions = await self.get_permissions(message.author)
-        # small hint that we now are parsing messages depending on whether they are 
-        # sent as private messages or in a TextChannel. The code should perhaps
-        # be split into different files for readability, this cluttering is getting out of control!
-        if isinstance(message.channel, discord.DMChannel):
-            if permissions > 1:
-                if message.author.id in self.next_match.players.keys():
-                    if message.content.startswith("!maps"):
-                        await message.author.send("You are entitled to setup your map preferences, but we did not implement that yet!")
-                    else:
-                        await message.author.send(f"Unimplemented command: {message.content}")
-                else:
-                    await message.author.send("You are not signed up for the next match! Go to #general and put a reaction to the registration post, or message EdvardP")
-            else:
-                await message.author.send("Remember to register for this season by reaching out to EdvardP. After that you have to register to the next match by reacting to the register post in #general")
-
-        elif isinstance(message.channel,type(self.broadcast_channel)):
-            if message.content == "!signup":
-                await message.author.add_roles(await self.get_role())
-            if message.content == "!optout":
-                await message.author.remove_roles(await self.get_role())
-            if permissions <=1 and message.content.startswith("!"):
-                await message.author.send("You don't have any rights.. !signup for the coming seasong")
-            if message.content == "!register":
-                if permissions == 3:
-                    if self.registration_active:
-                        await message.author.send("Registration already active, please cancel previous registration to start a new.")
-                    else:
-                        await self.registration_start()
-
-            elif message.content.startswith("!register "):
-                if permissions == 3:
-                    if self.registration_active:
-                        await message.author.send("Registration already active, please cancel previous registration to start a new.")
-                    else:
-                        await self.registration_start(message.content.removeprefix("!register "))
-
-            if message.content.startswith("!cancel"):
-                if permissions == 3:
-                    if self.registration_active:
-                        await self.registration_cancel()
-                    else:
-                        await message.author.send("No active registration.")
-
-            if message.content == "!end":
-                if permissions == 3:
-                    if not self.registration_active:
-                        await message.author.send("No registration active.")
-                    else:
-                        await self.registration_end()
-
-            if message.content == "!next":
-                if permissions > 1:
-                    if not self.next_match:
-                        await self.broadcast_channel.send("No registration for next match")
-                    else:
-                        await self.match_print_next()
-
-            if message.content == "!upcoming":
-                if permissions > 1:
-                    upcoming = ["**"+ upcoming.date.strftime("%Y-%m-%d")+"**" for upcoming in self.record.values() if upcoming.date > datetime.date.today()]
-                    upcoming = sorted(upcoming)
-                    await self.broadcast_channel.send(f"Registrated upcoming matches: {upcoming}")
-
-            if message.content == "!maps":
-                if permissions > 1:
-                    await message.author.send("You can register preferences here")
-                else:
-                    await message.author.send("You do not have permission to register map preferences")
-
-            if message.content.startswith("!purge"):
-                if permissions == 3:
-                    await self.registration_purge(message.content)
-
-            if message.content == "!easterEgg":
-                if permissions == 3:
-                    await self.broadcast_channel.purge()
-
-            if message.content == "!dank":
-                if permissions > 1:
-                    playlist = Playlist('https://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo')
-                    yt = random.choice(playlist.videos)
-                    await self.broadcast_channel.send(f"https://www.youtube.com/watch?v={yt.video_id}&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo")
-                    
-            if message.content.startswith("!setAdmin"):
-                if permissions == 3:
-                    IDs = message.content.removeprefix("!setAdmin ")
-                    IDs = IDs.split()
-                    for user in IDs:
-                        self.config.super_users_id.append(int(user))
-
-            if message.content.startswith("!removeAdmin"):
-                if permissions == 3:
-                    IDs = message.content.removeprefix("!removeAdmin")
-                    IDs = IDs.split()
-                    for id in IDs:
-                        if int(id) != self.config.owner:
-                            self.config.super_users_id.remove(int(id))
-
-            if message.content == "!admins":
-                if permissions > 1:
-                    admins = [admin.name for admin in self.get_all_members() if admin.id in self.config.super_users_id]
-                    await self.broadcast_channel.send(f"Adminlist: {admins}")
-            
-            if message.content == "!shutdown":
-                if permissions == 3:
-                    await self.write_state()
-                    await self.reset_state()
-                    await self.broadcast_channel.send("Bye Bye")
-                    await self.close()
-
-            if message.content == "!reset":
-                if permissions == 3:
-                    await self.reset_state()
-                    await message.author.send("CsBot reset state")
-
-
-
-
-    async def registration_start(self,date=None):
-        '''
-        Start a registration for next playdate
-        If date for next playdate matches the previous one, the previous registration 
-        have to be manually deleted before trying again
-        '''
-        if date:
-            year,month,day = date.split('-')
-            date = datetime.date(int(year),int(month),int(day))
-        self.registration_next = Registration({},date)
-        self.registration_active = True
-        self.registration_post = await self.broadcast_channel.send(f"```cpp\n# please react to this post to sign up for the match on:\n{self.registration_next.date}```")
-
-
-    async def registration_purge(self, message):
-        message = message.removeprefix("!purge ")
-        year,month,day = message.split('-')
-        date = datetime.date(int(year),int(month),int(day))
-        try:
-            self.record.pop(date)
-            if self.next_match.date == date:
-                self.next_match = None
-                await self.set_next_match()
-        except KeyError:
-            print("Invalid purge date")
-        await self.write_state()
-
-    async def registration_cancel(self):
-        '''
-        Cancel the ongoing registration
-        '''
-        self.registration_next = None
-        await self.registration_post.delete()
-        self.registration_post = None
-        self.registration_active = False
-
-    async def match_print_next(self):
-        playing = list(self.next_match.players.values())
-        if self.next_match.date < datetime.date.today():
-            await self.broadcast_channel.send("No planned match")
-        else:
-            await self.broadcast_channel.send(f"Date:**[{self.next_match.date}]**\nPlaying: {playing}")
-
-    async def read_state(self):
-        try:
-            with open("previous","rb") as f:
-                r = f.read()
-                self.record = pickle.loads(r)
-        except IOError as ioerr:
-            with open("previous","wb") as f:
-                pass
-            self.record = {}
-
-    async def write_state(self):
-        try:
-            with open("previous","wb") as f:
-                r = pickle.dumps(self.record)
-                f.write(r)
-        except IOError as ioerr:
-            print(ioerr)
-
-    async def registration_end(self):
-        '''
-        This should probably store some state on disk, update last registration and 
-        enable starting of a new registration
-        '''
-        if self.registration_next: # if new registration
-            if not self.next_match or (self.next_match and self.registration_next.date <= self.next_match.date):
-                self.next_match = self.registration_next
-            self.record[self.registration_next.date] = self.registration_next
-        await self.write_state()
-        await self.registration_post.delete()
-        self.registration_post = None
-        self.registration_next = None
-        self.registration_active = False
-
+        for handler in self.message_handlers:
+            await handler.method(message, permissions)
 
     async def get_permissions(self, user):
         if user.id in self.config.super_users_id:
@@ -391,6 +195,6 @@ if __name__ == "__main__":
         print("No admins added, ;only owner has access to core features")
 
 
-    config = Configuration(154310949195481088,admins, 875845075068944424, 941396110252060702)
+    config = Configuration(188422488080777217, admins, 875657026775158805, 878372503196676106)
     client = CsBot(config)
     client.run(token)
