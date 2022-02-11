@@ -1,9 +1,19 @@
 
 import pickle
-from random import randint
-
-import discord
 import datetime
+import random
+try:
+    import discord
+except ImportError as err:
+    module = str(err).split(' ')[-1:][0]
+    print(f"Please consider installing {module} with python -m pip install {module}.py")
+    exit()
+try:
+    from pytube import Playlist
+except ImportError as err:
+    module = str(err).split(' ')[-1:][0]
+    print(f"Please consider installing {module} with python -m pip install {module}")
+    exit()
 '''
 Interface:
 
@@ -26,14 +36,35 @@ Interface:
 
 
 class Configuration():
-    def __init__(self, admin, server, role):
-        self.owner = int(input("Insert your discordID\n"))
+    def __init__(self,owner=None, admin=[], server=None, role=None):
+        self.owner = None
         self.super_users_id = admin
+
         self.super_users_id.append(self.owner)
-        self.server = server
-        self.team_role = role
+        self.server = None
+        self.team_role = None
+        self.parseParams(owner,admin,server,role)
         self.guild = ""
         self.role = ""
+    
+    def parseParams(self,owner,admin,server,role):
+        if not owner:
+            self.owner = int(input("Enter your discordID"))
+        else:
+            self.owner = owner
+
+        self.super_users_id = admin
+        self.super_users_id.append(self.owner)
+
+        if not server:
+            self.server = int(input("Enter serverID"))
+        else:
+            self.server = server
+        
+        if not role:
+            self.role = int(input("Enter roleID"))
+        else:
+            self.team_role = role
 
 
 class Registration():
@@ -205,8 +236,9 @@ class CsBot(discord.Client):
 
         if message.content == "!dank":
             if permissions > 1:
-                await self.broadcast_channel.send(f"Brought to you by HenkeBazZ\nhttps://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo&index=1")
-    
+                playlist = Playlist('https://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo')
+                yt = random.choice(playlist.videos)
+                await self.broadcast_channel.send(f"https://www.youtube.com/watch?v={yt.video_id}&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo")
         if message.content.startswith("!setAdmin"):
             if permissions == 3:
                 IDs = message.content.removeprefix("!setAdmin ")
@@ -314,22 +346,24 @@ class CsBot(discord.Client):
         
 
 
-token = ""
-try:
-    with open("auth") as f:
-        token = f.read()
-except FileNotFoundError:
-    print("Unable to read authToken")
 
-admins = []
-try:
-    with open("admins") as f:
-        for admin in f.readlines():
-            admins.append(int(admin))
-except FileNotFoundError:
-    print("No admins added, only owner has access to core features")
+if __name__ == "__main__":
+    token = ""
+    try:
+        with open("auth") as f:
+            token = f.read()
+    except FileNotFoundError:
+        print("Unable to read authToken")
+
+    admins = []
+    try:
+        with open("admins") as f:
+            for admin in f.readlines():
+                admins.append(int(admin))
+    except FileNotFoundError:
+        print("No admins added, only owner has access to core features")
 
 
-config = Configuration(admins, 875845075068944424, 941396110252060702)
-client = CsBot(config)
-client.run(token)
+    config = Configuration(154310949195481088,admins, 875845075068944424, 941396110252060702)
+    client = CsBot(config)
+    client.run(token)
