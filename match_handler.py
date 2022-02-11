@@ -1,12 +1,12 @@
 import re
 import datetime
 
-class Registration():
+class Match():
     def __init__(self,users,date=None) -> None:
         self.date = None
         self.playdate_next(date)
         self.players = users
-        self.status = False
+        self.status = "active"
 
     def playdate_next(self,date):
         if date:
@@ -30,12 +30,12 @@ class Registration():
             self.date =  today + datetime.timedelta(days_to)
 
     def set_active(self):
-        self.status = True
+        self.status = "active"
 
     def set_passive(self):
-        self.status = False
+        self.status = "inactive"
 
-class RegistrationManager:
+class RegistrationHandler:
     def __init__(self):
         self.registration_active = False
         self.next_match = None

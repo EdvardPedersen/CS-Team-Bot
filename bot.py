@@ -8,7 +8,7 @@ import discord
 from pytube import Playlist
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
-from match_handler import Registration, RegistrationManager
+from match_handler import Match, RegistrationHandler
 '''
 Interface:
 
