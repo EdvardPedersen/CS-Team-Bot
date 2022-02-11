@@ -190,6 +190,9 @@ class CsBot(discord.Client):
         if message.author == self.user:
             return
         permissions = await self.get_permissions(message.author)
+        # small hint that we now are parsing messages depending on whether they are 
+        # sent as private messages or in a TextChannel. The code should perhaps
+        # be split into different files for readability, this cluttering is getting out of control!
         if isinstance(message.channel, discord.DMChannel):
             if permissions > 1:
                 if message.author.id in self.next_match.players.keys():
@@ -289,6 +292,12 @@ class CsBot(discord.Client):
                 if permissions > 1:
                     admins = [admin.name for admin in self.get_all_members() if admin.id in self.config.super_users_id]
                     await self.broadcast_channel.send(f"Adminlist: {admins}")
+            if message.content == "!shutdown":
+                if permissions == 3:
+                    await self.write_state()
+                    await self.reset_state()
+                    await self.broadcast_channel.send("Bye Bye")
+                    await self.close()
 
             if message.content == "!reset":
                 if permissions == 3:
