@@ -9,6 +9,7 @@ from pytube import Playlist
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
 from match_handler import Match, RegistrationHandler
+from constants import Permissions
 '''
 Interface:
 
@@ -40,28 +41,30 @@ class CsBot(discord.Client):
         self.broadcast_channel = None
         self.message_handlers = []
         self.reaction_handlers = []
-        self.message_handlers.append(GenericMessageHandler("!signup", "Sign up for season", "Not implemented", False))
-        self.message_handlers.append(GenericMessageHandler("!optout", "Opt out of the rest of the season", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!register", "Start registration for match", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!next", "Show next match", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!upcoming", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!maps", "Start registration of map preferences", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!purge", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!easterEgg", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!dank", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!setAdmin", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!removeAdmin", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!admins", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!shutdown", "???", "Not implemented", True))
-        self.message_handlers.append(GenericMessageHandler("!reset", "???", "Not implemented", True))
+        self.message_handlers.append(GenericMessageHandler(["!signup"], "Sign up for season", "Signup not implemented",True,Permissions.unrestricted))
+        self.message_handlers.append(GenericMessageHandler(["!optout"], "Opt out of the rest of the season", "Optout not implemented",True,Permissions.member))
+        self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
+        # self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented",False,Permissions.admin))
+        # self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented",False,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!maps"], "Start registration of map preferences", "Maps not implemented",True,Permissions.member))
+        self.message_handlers.append(GenericMessageHandler(["!next"], "Show next match", "Next not implemented",False,Permissions.unrestricted))
+        self.message_handlers.append(GenericMessageHandler(["!upcoming"], "???", "Not implemented",True,Permissions.unrestricted))
+        self.message_handlers.append(GenericMessageHandler(["!commands"], "List of available commands", "Commands not implemented",False,Permissions.standard))
+        self.message_handlers.append(GenericMessageHandler(["!purge"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!easterEgg"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!dank"], "???", "Not implemented",True,Permissions.standard))
+        self.message_handlers.append(GenericMessageHandler(["!setAdmin"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!removeAdmin"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!admins"], "???", "Not implemented",True,Permissions.standard))
+        self.message_handlers.append(GenericMessageHandler(["!shutdown"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler(["!reset"], "???", "Not implemented",True,Permissions.admin))
 
     async def on_ready(self):
         self.config.role = await self.get_role()
         for channel in self.get_all_channels():
-            if channel.name == "general":
+            if channel.name == self.config.broadcast_channel:
                 self.broadcast_channel = channel
+                await self.broadcast_channel.send("Bot online")
         
         if not self.broadcast_channel:
             print("Could not set broadcast_channel")
@@ -77,12 +80,12 @@ class CsBot(discord.Client):
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        permissions = await self.get_permissions(message.author)
+        permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.method(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
-        permissions = await self.get_permissions(message.author)
+        permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.method(reaction, permissions)
 
@@ -109,15 +112,6 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("Unable to read authToken")
 
-    admins = []
-    try:
-        with open("admins") as f:
-            for admin in f.readlines():
-                admins.append(int(admin))
-    except FileNotFoundError:
-        print("No admins added, ;only owner has access to core features")
-
-
-    config = Configuration(188422488080777217, admins, 875657026775158805, 878372503196676106)
+    config = Configuration()
     client = CsBot(config)
     client.run(token)

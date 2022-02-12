@@ -1,5 +1,8 @@
 import re
 import datetime
+from generic_message_handler import GenericMessageHandler
+from constants import Permissions
+
 
 class Match():
     def __init__(self,users,date=None) -> None:
@@ -35,14 +38,28 @@ class Match():
     def set_passive(self):
         self.status = "inactive"
 
-class RegistrationHandler:
-    def __init__(self):
+class RegistrationHandler(GenericMessageHandler):
+    def __init__(self,commands,help_text,response,reply_private,permission=Permissions.admin):
+        super().__init__(commands,help_text,response,reply_private,permission)
         self.registration_active = False
         self.next_match = None
         self.registration_next = None
         self.registration_post = None
-        self.my_regex = re.compile("^!registration")
+        self.setup_handlers()
 
-    def method(self, message):
-        if my_regex.match(message.content):
-            pass
+    async def register(self,message):
+        await self.reply(message,"Registration not implemented")
+    
+    async def cancel(self, message):
+        await self.reply(message,"Cancelation not implements")
+    
+    async def end(self, message):
+        await self.reply(message,"End not implemented")
+
+    async def method(self, message,permissions):
+        if not self.match_regex(message.content):
+            return
+        if permissions < self.permissionRequired:
+            return
+
+        await self.handler(message)
