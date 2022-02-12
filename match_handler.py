@@ -1,5 +1,6 @@
 import re
 import datetime
+import discord
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions
 
@@ -42,13 +43,15 @@ class RegistrationHandler(GenericMessageHandler):
     def __init__(self,commands,help_text,response,reply_private,permission=Permissions.admin):
         super().__init__(commands,help_text,response,reply_private,permission)
         self.registration_active = False
-        self.next_match = None
+        self.match_next = None
         self.registration_next = None
         self.registration_post = None
+        self.match_post = None
         self.setup_handlers()
 
     async def register(self,message):
-        await self.reply(message,"Registration not implemented")
+        self.match_post = await message.channel.send("React to this f m")
+        # await self.reply(message,"Registration not implemented")
     
     async def cancel(self, message):
         await self.reply(message,"Cancelation not implements")
@@ -57,9 +60,14 @@ class RegistrationHandler(GenericMessageHandler):
         await self.reply(message,"End not implemented")
 
     async def method(self, message,permissions):
-        if not self.match_regex(message.content):
-            return
-        if permissions < self.permissionRequired:
-            return
+        if isinstance(message,discord.Message):
+            if permissions < self.permissionRequired:
+                return
+            if not self.match_regex(message.content):
+                return
+            await self.handler(message)
 
-        await self.handler(message)
+        elif isinstance(message, discord.RawReactionActionEvent):
+            if permissions < Permissions.member:
+                return
+            # await message.member.send("Thanks")

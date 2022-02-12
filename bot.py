@@ -41,9 +41,13 @@ class CsBot(discord.Client):
         self.broadcast_channel = None
         self.message_handlers = []
         self.reaction_handlers = []
+        registrationhandler = RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin)
+        self.message_handlers.append(registrationhandler)
+        self.reaction_handlers.append(registrationhandler)
+
         self.message_handlers.append(GenericMessageHandler(["!signup"], "Sign up for season", "Signup not implemented",True,Permissions.unrestricted))
         self.message_handlers.append(GenericMessageHandler(["!optout"], "Opt out of the rest of the season", "Optout not implemented",True,Permissions.member))
-        self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
+        # self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
         # self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented",False,Permissions.admin))
         # self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented",False,Permissions.admin))
         self.message_handlers.append(GenericMessageHandler(["!maps"], "Start registration of map preferences", "Maps not implemented",True,Permissions.member))
@@ -80,28 +84,28 @@ class CsBot(discord.Client):
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        permissions = await self.get_permissions(reaction.member)
+        permissions = await self.get_permissions(reaction.user_id)
         for handler in self.reaction_handlers:
             await handler.method(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
-        permissions = await self.get_permissions(reaction.member)
+        permissions = await self.get_permissions(reaction.user_id)
         for handler in self.reaction_handlers:
             await handler.method(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
             return
-        permissions = await self.get_permissions(message.author)
+        permissions = await self.get_permissions(message.author.id)
         for handler in self.message_handlers:
             await handler.method(message, permissions)
 
-    async def get_permissions(self, user):
-        if user.id in self.config.super_users_id:
-            return 3
-        if user in self.config.role.members:
-            return 2
-        return 1
+    async def get_permissions(self, userID):
+        if userID in self.config.super_users_id:
+            return Permissions.admin
+        if userID in self.config.role.members:
+            return Permissions.member
+        return Permissions.standard
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import inspect
 
 class GenericMessageHandler:
     def __init__(self, commands, help_text, response,reply_private,permissionLevel): 
-        self.regex = [re.compile(f"^{command}*") for command in commands]
+        self.regex = [re.compile(f"^{command}") for command in commands]   
         self.response = response
         self.help_text = help_text
         self.private = reply_private
@@ -25,7 +25,7 @@ class GenericMessageHandler:
             handled = False
 
     async def unhandled(self,message):
-        self.reply(message, self.response)
+        await self.reply(message, "Unimplemented")
 
     async def reply(self, input, response):
         if self.private:
@@ -44,9 +44,9 @@ class GenericMessageHandler:
         self.handlers[regex] = handler
 
     async def method(self, message, permission):
-        if not self.match_regex(message.content):
-            return
         if permission < self.permissionRequired:
+            return
+        if not self.match_regex(message.content):
             return
 
         await self.reply(message,self.response)
