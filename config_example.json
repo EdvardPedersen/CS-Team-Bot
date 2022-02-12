@@ -1,0 +1,6 @@
+{
+    "ownerID": "<int> ID for the owner of the bot",
+    "admin IDs": "[int,int,int...] IDs for the administrators for the bot",
+    "team role ID": "<int> ID of member-role for playing members",
+    "broadcast channel":"<string> Name of channel for bot broadcasting"
+}

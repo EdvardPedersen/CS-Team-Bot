@@ -1,16 +1,78 @@
+import json
+
+
 class Configuration():
-    def __init__(self,owner=None, admin=[], server=None, role=None):
+    def __init__(self,config_file="config"):
+        self.config_file = config_file
         self.owner = None
         self.super_users_id = None
         self.server = None
         self.team_role = None
-        self.parseParams(owner,admin,server,role)
+        self.broadcast_channel = None
         self.guild = ""
         self.role = ""
+        self.team_role = None
+        self.setup()
 
-    def parseParams(self,owner,admin,server,role):
-        self.owner = owner
-        self.super_users_id = admin
-        self.super_users_id.append(self.owner)
-        self.server = server
-        self.team_role = role
+
+    def _setupCfgTerminal(self):
+        try:
+            owner = int(input("OwnerID: "))
+            admins = input("Admin IDs, space separated: ")
+            if admins:
+                admins = [int(admin) for admin in admins.split('')]
+            team_role = None
+            while not team_role:
+                team_role = int(input("Team role ID: "))
+            broadcast_channel = input("Name of broadcast channel: ")
+            cfg = {
+                "ownerID":owner,
+                "admin IDs":admins,
+                "team role ID":team_role,
+                "broadcast channel":broadcast_channel
+            }
+            with open(self.config_file,"w") as f:
+                json.dump(cfg,f)
+        except Exception as e:
+            print(e)
+            print(type(e))
+            exit()
+
+    def setup(self):
+        config = {}
+        loaded = False
+        while(not loaded):
+            try:
+                with open(self.config_file) as f:
+                    config = json.load(f)
+                    self.owner = config["ownerID"]
+                    self.super_users_id = [id for id in config["admin IDs"]]
+                    if self.owner not in self.super_users_id:
+                        self.super_users_id.append(self.owner)
+                    self.team_role = config["team role ID"]
+                    self.broadcast_channel = config["broadcast channel"]
+                    loaded = True
+            except FileNotFoundError as ferr:
+                print(ferr)
+                if input("Would you like to setup the config from the terminal? y/n ") == 'y':
+                    self._setupCfgTerminal()
+                else:
+                    exit(f"Please setup your config: {self.config_file}")
+            except json.decoder.JSONDecodeError as derr:
+                print(derr)
+                if input("Would you like to setup the config from the terminal? y/n ") == 'y':
+                    self._setupCfgTerminal()
+                else:
+                    exit(f"Please setup your config: {self.config_file}")
+            except KeyError as kerr:
+                print(kerr)
+                if input("Would you like to setup the config from the terminal? y/n ") == 'y':
+                    self._setupCfgTerminal()
+                else:
+                    exit(f"Please setup your config: {self.config_file}")
+            except Exception as e:
+                print(e)
+                print(type(e))
+                exit()
+        
+
