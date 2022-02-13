@@ -41,27 +41,27 @@ class CsBot(discord.Client):
         self.broadcast_channel = None
         self.message_handlers = []
         self.reaction_handlers = []
-        registrationhandler = RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin)
+        registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
 
-        self.message_handlers.append(GenericMessageHandler(["!signup"], "Sign up for season", "Signup not implemented",True,Permissions.unrestricted))
-        self.message_handlers.append(GenericMessageHandler(["!optout"], "Opt out of the rest of the season", "Optout not implemented",True,Permissions.member))
+        self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
         # self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
         # self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented",False,Permissions.admin))
         # self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented",False,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!maps"], "Start registration of map preferences", "Maps not implemented",True,Permissions.member))
-        self.message_handlers.append(GenericMessageHandler(["!next"], "Show next match", "Next not implemented",False,Permissions.unrestricted))
-        self.message_handlers.append(GenericMessageHandler(["!upcoming"], "???", "Not implemented",True,Permissions.unrestricted))
-        self.message_handlers.append(GenericMessageHandler(["!commands"], "List of available commands", "Commands not implemented",False,Permissions.standard))
-        self.message_handlers.append(GenericMessageHandler(["!purge"], "???", "Not implemented",True,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!easterEgg"], "???", "Not implemented",True,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!dank"], "???", "Not implemented",True,Permissions.standard))
-        self.message_handlers.append(GenericMessageHandler(["!setAdmin"], "???", "Not implemented",True,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!removeAdmin"], "???", "Not implemented",True,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!admins"], "???", "Not implemented",True,Permissions.standard))
-        self.message_handlers.append(GenericMessageHandler(["!shutdown"], "???", "Not implemented",True,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler(["!reset"], "???", "Not implemented",True,Permissions.admin))
+        self.message_handlers.append(GenericMessageHandler("Start registration of map preferences", "Maps not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("Show next match", "Next not implemented",False))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("List of available commands", "Commands not implemented",False))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
         self.config.role = await self.get_role()
@@ -84,28 +84,27 @@ class CsBot(discord.Client):
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        permissions = await self.get_permissions(reaction.user_id)
+        permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
-            await handler.method(reaction, permissions)
+            await handler.dispatch(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
-        permissions = await self.get_permissions(reaction.user_id)
+        permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
-            await handler.method(reaction, permissions)
+            await handler.dispatch(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
             return
-        permissions = await self.get_permissions(message.author.id)
+        permissions = await self.get_permissions(message.author)
         for handler in self.message_handlers:
-            await handler.method(message, permissions)
+            await handler.dispatch(message, permissions)
 
-    async def get_permissions(self, userID):
-        if userID in self.config.super_users_id:
+    async def get_permissions(self, member):
+        if self.broadcast_channel.permissions_for(member).manage_roles:
             return Permissions.admin
-        if userID in self.config.role.members:
-            return Permissions.member
-        return Permissions.standard
+        else:
+            return Permissions.unrestricted
 
 
 if __name__ == "__main__":
