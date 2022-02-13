@@ -1,6 +1,10 @@
+from email import message
+import inspect
 import re
 import datetime
+from sys import prefix
 import discord
+from urllib3 import Retry
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions
 
@@ -40,34 +44,29 @@ class Match():
         self.status = "inactive"
 
 class RegistrationHandler(GenericMessageHandler):
-    def __init__(self,commands,help_text,response,reply_private,permission=Permissions.admin):
-        super().__init__(commands,help_text,response,reply_private,permission)
+    def __init__(self,help_text,response,reply_private):
+        super().__init__(help_text,response,reply_private)
         self.registration_active = False
         self.match_next = None
         self.registration_next = None
         self.registration_post = None
         self.match_post = None
-        self.setup_handlers()
 
-    async def register(self,message):
-        self.match_post = await message.channel.send("React to this f m")
-        # await self.reply(message,"Registration not implemented")
+    def set_handler(self,handler):
+        self.handler = handler
+
+    async def message_register(self,message,permission):
+        if permission < Permissions.admin:
+            return
+        # self.match_post = await message.channel.send("React to this f m")
+        await self.reply(message,"Registration not implemented")
     
-    async def cancel(self, message):
+    async def message_cancel(self, message,permission):
+        if permission < Permissions.admin:
+            return
         await self.reply(message,"Cancelation not implements")
     
-    async def end(self, message):
+    async def message_end(self, message,permission):
+        if permission < Permissions.admin:
+            return
         await self.reply(message,"End not implemented")
-
-    async def method(self, message,permissions):
-        if isinstance(message,discord.Message):
-            if permissions < self.permissionRequired:
-                return
-            if not self.match_regex(message.content):
-                return
-            await self.handler(message)
-
-        elif isinstance(message, discord.RawReactionActionEvent):
-            if permissions < Permissions.member:
-                return
-            # await message.member.send("Thanks")

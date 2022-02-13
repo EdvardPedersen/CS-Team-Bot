@@ -1,28 +1,19 @@
+from dis import disco
 import re
-from constants import Permissions
 import inspect
+import discord
+from constants import Permissions
 
 class GenericMessageHandler:
-    def __init__(self, commands, help_text, response,reply_private,permissionLevel): 
-        self.regex = [re.compile(f"^{command}") for command in commands]   
+    def __init__(self, help_text, response,reply_private):   
+        self.command_prefix = '!'
+        self.message_prefix = "message_"
+        self.reaction_prefix = "reaction_"
         self.response = response
         self.help_text = help_text
         self.private = reply_private
-        self.permissionRequired = permissionLevel
         self.handlers = {}
         self.handler = None
-        self.setup_handlers()
-
-    def setup_handlers(self):
-        handled = False
-        for regex in self.regex:
-            for member in inspect.getmembers(self, predicate=inspect.ismethod):
-                if regex.match(f"!{member[0]}"):
-                    self.handlers[regex] = member[1]
-                    handled = True
-            if not handled:
-                self.handlers[regex] = self.unhandled
-            handled = False
 
     async def unhandled(self,message):
         await self.reply(message, "Unimplemented")
@@ -33,20 +24,28 @@ class GenericMessageHandler:
         else:
             await input.channel.send(response)
 
-    def match_regex(self,content):
-        for regex in self.regex:
-            if regex.match(content):
-                self.handler = self.handlers[regex]
-                return True
-        return False
+    async def reaction_add(self,event,permission):
+        await event.member.send(f"Cool emoji: {event.emoji}")
 
-    def set_regex_handler(self, regex, handler):
-        self.handlers[regex] = handler
+    async def reaction_remove(self,event,permission):
+        await event.member.send(f"Oh noe! {event.emoji} was so cool")
 
-    async def method(self, message, permission):
-        if permission < self.permissionRequired:
-            return
-        if not self.match_regex(message.content):
-            return
-
-        await self.reply(message,self.response)
+    async def dispatch(self, message, permission):
+        # Please, god, refactor me
+        if isinstance(message, discord.Message):
+            result = re.match("^!([a-zZ-a]*)", message.content)
+            if result:
+                group = result.group(1)
+                for name,method in inspect.getmembers(self, predicate=inspect.ismethod):
+                    if name == self.message_prefix+group:
+                        await method(message,permission)
+        if isinstance(message, discord.RawReactionActionEvent):
+            match message.event_type:
+                case 'REACTION_ADD':
+                    for name,method in inspect.getmembers(self,predicate=inspect.ismethod):
+                        if name == self.reaction_prefix+"add":
+                            await method(message,permission)
+                case "REACTION_REMOVE":
+                    for name,method in inspect.getmembers(self,predicate=inspect.ismethod):
+                        if name == self.reaction_prefix+"add":
+                            await method(message,permission)
