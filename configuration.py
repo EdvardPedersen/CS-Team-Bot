@@ -5,7 +5,6 @@ class Configuration():
     def __init__(self,config_file="config"):
         self.config_file = config_file
         self.owner = None
-        self.super_users_id = None
         self.server = None
         self.team_role = None
         self.broadcast_channel = None
@@ -18,18 +17,16 @@ class Configuration():
     def _setupCfgTerminal(self):
         try:
             owner = int(input("OwnerID: "))
-            admins = input("Admin IDs, space separated: ")
-            if admins:
-                admins = [int(admin) for admin in admins.split('')]
             team_role = None
             while not team_role:
                 team_role = int(input("Team role ID: "))
             broadcast_channel = input("Name of broadcast channel: ")
+            server_id = int(input("Server ID: "))
             cfg = {
                 "ownerID":owner,
-                "admin IDs":admins,
                 "team role ID":team_role,
-                "broadcast channel":broadcast_channel
+                "broadcast channel":broadcast_channel,
+                "server ID":server_id
             }
             with open(self.config_file,"w") as f:
                 json.dump(cfg,f)
@@ -46,11 +43,9 @@ class Configuration():
                 with open(self.config_file) as f:
                     config = json.load(f)
                     self.owner = config["ownerID"]
-                    self.super_users_id = [id for id in config["admin IDs"]]
-                    if self.owner not in self.super_users_id:
-                        self.super_users_id.append(self.owner)
                     self.team_role = config["team role ID"]
                     self.broadcast_channel = config["broadcast channel"]
+                    self.server = config["server ID"]
                     loaded = True
             except FileNotFoundError as ferr:
                 print(ferr)
