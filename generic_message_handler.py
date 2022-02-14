@@ -1,4 +1,3 @@
-from dis import disco
 import re
 import inspect
 import discord

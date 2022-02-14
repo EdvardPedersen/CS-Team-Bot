@@ -1,10 +1,7 @@
-from email import message
 import inspect
 import re
 import datetime
-from sys import prefix
 import discord
-from urllib3 import Retry
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions
 
