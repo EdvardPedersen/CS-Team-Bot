@@ -69,5 +69,3 @@ class Configuration():
                 print(e)
                 print(type(e))
                 exit()
-        
-
