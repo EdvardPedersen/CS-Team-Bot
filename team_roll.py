@@ -2,21 +2,26 @@ import math
 import constants
 import random
 
-def roll_teams(players, matches):
-    players = list(players.items())
+
+def choose_team(players):
+    chosen = []
+    k = 5 if len(players)>5 else len(players)
+    for i in range(k):
+        applicable = [player for player in players.values() if player.chosen <= min([player.chosen for player in players.values()]) and player not in chosen]
+        player = random.choice(applicable)
+        chosen.append(player)
+        player.chosen += 1
+
+    for player in players.values():
+        player.chosen = 0
+    return chosen
+
+
+def roll_teams(players, num_matches):
     best_teams = [[],[]]
-    played = []
-    k = (len(players) if len(players)<5 else 5)
-    for i in range(matches):
-        best_score = math.inf
-        for y in range(100):
-            team = random.choices(players, k=k)
-            score = _calculate_average_distance(team)
-            if score < best_score:
-                if i == 0:
-                    best_score = score
-                    played = team
-                    best_teams[i] = [player[1].name for player in team]
+    for i in range(num_matches):
+        best_teams[i] = choose_team(players)
+
     return best_teams
 
 def _calculate_map_compatability(p1, p2):

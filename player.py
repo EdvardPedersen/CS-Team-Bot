@@ -4,7 +4,8 @@ class Player:
     def __init__(self, id, name):
         self.id = id
         self.name = name
-        self.rank = 0
+        self.rank = 1
+        self.chosen = 0
         self.maps = {}
         for map in constants.maps:
             self.maps[map] = 0
@@ -14,6 +15,12 @@ class Player:
 
     def rank_map(self, map, rank):
         self.maps[map] = rank
+
+    def map_ranking(self):
+        ranking = ""
+        for map,value in self.maps.items():
+            ranking += f"{map}: {value}\n"
+        return ranking
 
     def get_info(self):
         s = f"{self.name} is rank {constants.rank[self.rank]} and has map order: |"
