@@ -3,18 +3,21 @@ import constants
 import random
 
 def roll_teams(players, matches):
+    players = list(players.items())
     best_teams = [[],[]]
     played = []
+    k = (len(players) if len(players)<5 else 5)
     for i in range(matches):
         best_score = math.inf
         for y in range(100):
-            team = random.choices(players, k=5)
+            team = random.choices(players, k=k)
             score = _calculate_average_distance(team)
             if score < best_score:
                 if i == 0:
                     best_score = score
                     played = team
-                    best_teams[i] = team
+                    best_teams[i] = [player[1].name for player in team]
+    return best_teams
 
 def _calculate_map_compatability(p1, p2):
     diff = 0
