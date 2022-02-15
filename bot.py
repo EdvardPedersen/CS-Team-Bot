@@ -49,20 +49,6 @@ class CsBot(discord.Client):
 
         self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
         self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
-        # self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
-        # self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented",False,Permissions.admin))
-        # self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented",False,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler("Start registration of map preferences", "Maps not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("Show next match", "Next not implemented",False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("List of available commands", "Commands not implemented",False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
         self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
@@ -91,6 +77,14 @@ class CsBot(discord.Client):
             await handler.dispatch(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
+        members = self.get_all_members()
+        member = None
+        for m in members:
+            if m.id == reaction.user_id:
+                member = m
+        if not member:
+            return
+        reaction.member = member
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
@@ -107,7 +101,6 @@ class CsBot(discord.Client):
             return Permissions.admin
         else:
             return Permissions.unrestricted
-
 
 if __name__ == "__main__":
     token = ""
