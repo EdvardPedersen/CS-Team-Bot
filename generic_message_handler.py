@@ -23,12 +23,6 @@ class GenericMessageHandler:
         else:
             await input.channel.send(response)
 
-    async def reaction_add(self,event,permission):
-        await event.member.send(f"Cool emoji: {event.emoji}")
-
-    async def reaction_remove(self,event,permission):
-        await event.member.send(f"Oh noe! {event.emoji} was so cool")
-
     async def dispatch(self, message, permission):
         # Please, god, refactor me
         if isinstance(message, discord.Message):
@@ -46,5 +40,5 @@ class GenericMessageHandler:
                             await method(message,permission)
                 case "REACTION_REMOVE":
                     for name,method in inspect.getmembers(self,predicate=inspect.ismethod):
-                        if name == self.reaction_prefix+"add":
+                        if name == self.reaction_prefix+"remove":
                             await method(message,permission)
