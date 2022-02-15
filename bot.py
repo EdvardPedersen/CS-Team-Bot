@@ -10,6 +10,7 @@ from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
 from match_handler import Match, RegistrationHandler
 from constants import Permissions
+from stupid import StupidityHandler
 '''
 Interface:
 
@@ -44,6 +45,7 @@ class CsBot(discord.Client):
         registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
+        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "", False))
 
         self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
         self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
