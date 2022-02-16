@@ -45,8 +45,7 @@ class CsBot(discord.Client):
         registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
-        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "", False))
-
+        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
         self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
         self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
         self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
@@ -56,7 +55,7 @@ class CsBot(discord.Client):
         for channel in self.get_all_channels():
             if channel.name == self.config.broadcast_channel:
                 self.broadcast_channel = channel
-                await self.broadcast_channel.send("Bot online")
+                # await self.broadcast_channel.send("Bot online")
         
         if not self.broadcast_channel:
             print("Could not set broadcast_channel")
@@ -91,8 +90,15 @@ class CsBot(discord.Client):
 
     async def on_message(self, message):
         if message.author == self.user:
-            return
-        permissions = await self.get_permissions(message.author)
+            return  
+        permissions = Permissions.restricted
+        if isinstance(message.channel,discord.TextChannel):
+            permissions = await self.get_permissions(message.author)
+        elif isinstance(message.channel, discord.DMChannel):
+            for member in self.get_all_members():
+                if member.id == message.author.id:
+                    permissions = await self.get_permissions(member)
+                    break
         for handler in self.message_handlers:
             await handler.dispatch(message, permissions)
 
@@ -100,7 +106,7 @@ class CsBot(discord.Client):
         if self.broadcast_channel.permissions_for(member).manage_roles:
             return Permissions.admin
         else:
-            return Permissions.unrestricted
+            return Permissions.restricted
 
 if __name__ == "__main__":
     token = ""
