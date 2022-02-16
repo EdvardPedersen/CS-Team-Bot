@@ -11,9 +11,6 @@ def choose_team(players):
         player = random.choice(applicable)
         chosen.append(player)
         player.chosen += 1
-
-    for player in players.values():
-        player.chosen = 0
     return chosen
 
 
@@ -21,6 +18,9 @@ def roll_teams(players, num_matches):
     best_teams = []
     for i in range(num_matches):
         best_teams.append(choose_team(players))
+
+    for player in players.values():
+        player.chosen = 0
 
     return best_teams
 
