@@ -70,6 +70,7 @@ class RegistrationHandler(GenericMessageHandler):
             return
         if self.registration_active:
             self.reply(message, "Registration already active")
+            return
         res = re.match("^![a-zA-Z]*\s(\d{1})",message.content)
         if res:
             num_matches = int(res.group(1))
