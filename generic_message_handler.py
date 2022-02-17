@@ -10,27 +10,18 @@ class GenericMessageHandler:
         self.reaction_prefix = "reaction_"
         self.response = response
         self.help_text = help_text
-        self.private = reply_private
-        self.handlers = {}
-        self.handler = None
+        self.reply_private = reply_private
 
     async def unhandled(self,message):
         await self.reply(message, "Unimplemented")
 
     async def reply(self, input, response):
-        if self.private:
+        if self.reply_private:
             await input.author.send(response)
         else:
             await input.channel.send(response)
 
-    async def reaction_add(self,event,permission):
-        await event.member.send(f"Cool emoji: {event.emoji}")
-
-    async def reaction_remove(self,event,permission):
-        await event.member.send(f"Oh noe! {event.emoji} was so cool")
-
     async def dispatch(self, message, permission):
-        # Please, god, refactor me
         if isinstance(message, discord.Message):
             result = re.match("^!([a-zZ-a]*)", message.content)
             if result:
@@ -46,5 +37,5 @@ class GenericMessageHandler:
                             await method(message,permission)
                 case "REACTION_REMOVE":
                     for name,method in inspect.getmembers(self,predicate=inspect.ismethod):
-                        if name == self.reaction_prefix+"add":
+                        if name == self.reaction_prefix+"remove":
                             await method(message,permission)

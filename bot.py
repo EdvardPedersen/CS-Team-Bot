@@ -4,11 +4,12 @@ import pickle
 import datetime
 import random
 import re
+import os
 import discord
 from pytube import Playlist
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
-from match_handler import Match, RegistrationHandler
+from registration_handler import RegistrationHandler
 from constants import Permissions
 from stupid import StupidityHandler
 '''
@@ -45,24 +46,7 @@ class CsBot(discord.Client):
         registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
-        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "", False))
-
-        self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
-        # self.message_handlers.append(RegistrationHandler(["!register","!cancel","!end"],"Register new match","Not implemented",False, Permissions.admin))
-        # self.message_handlers.append(GenericMessageHandler("!cancel", "Cancel match registration", "Not implemented",False,Permissions.admin))
-        # self.message_handlers.append(GenericMessageHandler("!end", "End registration period for next match", "Not implemented",False,Permissions.admin))
-        self.message_handlers.append(GenericMessageHandler("Start registration of map preferences", "Maps not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("Show next match", "Next not implemented",False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("List of available commands", "Commands not implemented",False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
         self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
@@ -70,7 +54,7 @@ class CsBot(discord.Client):
         for channel in self.get_all_channels():
             if channel.name == self.config.broadcast_channel:
                 self.broadcast_channel = channel
-                await self.broadcast_channel.send("Bot online")
+                # await self.broadcast_channel.send("Bot online")
         
         if not self.broadcast_channel:
             print("Could not set broadcast_channel")
@@ -91,14 +75,29 @@ class CsBot(discord.Client):
             await handler.dispatch(reaction, permissions)
 
     async def on_raw_reaction_remove(self, reaction):
+        members = self.get_all_members()
+        member = None
+        for m in members:
+            if m.id == reaction.user_id:
+                member = m
+        if not member:
+            return
+        reaction.member = member
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
-            return
-        permissions = await self.get_permissions(message.author)
+            return  
+        permissions = Permissions.restricted
+        if isinstance(message.channel,discord.TextChannel):
+            permissions = await self.get_permissions(message.author)
+        elif isinstance(message.channel, discord.DMChannel):
+            for member in self.get_all_members():
+                if member.id == message.author.id:
+                    permissions = await self.get_permissions(member)
+                    break
         for handler in self.message_handlers:
             await handler.dispatch(message, permissions)
 
@@ -106,13 +105,15 @@ class CsBot(discord.Client):
         if self.broadcast_channel.permissions_for(member).manage_roles:
             return Permissions.admin
         else:
-            return Permissions.unrestricted
-
+            return Permissions.restricted
 
 if __name__ == "__main__":
     token = ""
+    token_file = "auth"
+    if not os.path.isfile(token_file):
+        exit("Please create a tokenfile 'auth'")
     try:
-        with open("auth") as f:
+        with open(token_file) as f:
             token = f.read()
     except FileNotFoundError:
         print("Unable to read authToken")
