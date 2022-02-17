@@ -11,7 +11,7 @@ def roll_teams(players, num_matches) -> list:
         best_score = math.inf
         for _ in range(100):
             applicable = [player for player in players.values() if player.chosen <= min([player.chosen for player in players.values()])]
-            team = random.choices(applicable, k=team_size)
+            team = random.sample(applicable, k=team_size)
             score = _calculate_average_distance(team)
             if score < best_score:
                 best_score = score
