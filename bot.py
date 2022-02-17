@@ -4,11 +4,12 @@ import pickle
 import datetime
 import random
 import re
+import os
 import discord
 from pytube import Playlist
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
-from match_handler import Match, RegistrationHandler
+from registration_handler import RegistrationHandler
 from constants import Permissions
 from stupid import StupidityHandler
 '''
@@ -108,8 +109,11 @@ class CsBot(discord.Client):
 
 if __name__ == "__main__":
     token = ""
+    token_file = "auth"
+    if not os.path.isfile(token_file):
+        exit("Please create a tokenfile 'auth'")
     try:
-        with open(input("Please provide filename for token: ")) as f:
+        with open(token_file) as f:
             token = f.read()
     except FileNotFoundError:
         print("Unable to read authToken")
