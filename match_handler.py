@@ -5,7 +5,7 @@ import discord
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions, ranks, maps
 from player import Player
-from team_roll import roll_teams
+from team_roll import roll_teams, get_ban_order
 
 class Match():
     def __init__(self,users,num_matches=2,date=None) -> None:
@@ -64,6 +64,11 @@ class RegistrationHandler(GenericMessageHandler):
         for player in self.player_pool.values():
             players += f"{player.name}: {ranks[player.rank]} maps: `{[x for x in reversed(sorted(player.maps,key=lambda k:player.maps[k]))]}`\n"
         await self.reply(message, players)
+
+    async def message_banorder(self,message,permission):
+        if permission < Permissions.admin:
+            return
+        await self.reply(message,f"{get_ban_order(self.match_next.teams)}")
 
     async def message_register(self,message,permission):
         if permission < Permissions.admin:
@@ -208,18 +213,17 @@ class RegistrationHandler(GenericMessageHandler):
             player.set_rank(rank)
         await message.author.send(f"Your registered rank:{ranks[rank]}")
 
-
-    def list_maps(self):
-        mapranking = ""
-        for map in maps:
-            mapranking += f"{map} "
-        return mapranking
-
     async def message_map_info_player(self,message,permission):
         if not message.author.id in self.player_pool:
             return
         player = self.player_pool[message.author.id]
         await self.reply(message, player.map_ranking())
+
+    def list_maps(self) -> str:
+        mapslist = ""
+        for map in maps:
+            mapslist += f"{map} "
+        return mapslist
 
     async def message_maps(self, message, permission):
         if permission < Permissions.admin:
@@ -228,6 +232,7 @@ class RegistrationHandler(GenericMessageHandler):
             player = Player(message.author.id,message.author.name)
             self.player_pool[player.id] = player
         res = message.content.split(' ')[1:]
+        print(res)
         if len(res) != 7:
             await self.reply(message,f"Please give map preference as a space-separated list from most wanted to least wanted map like:\n`!maps {self.list_maps()}`")
             return
