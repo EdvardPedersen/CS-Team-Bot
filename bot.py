@@ -46,8 +46,6 @@ class CsBot(discord.Client):
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
         self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
-        self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
-        self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
         self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
@@ -111,7 +109,7 @@ class CsBot(discord.Client):
 if __name__ == "__main__":
     token = ""
     try:
-        with open("auth") as f:
+        with open(input("Please provide filename for token: ")) as f:
             token = f.read()
     except FileNotFoundError:
         print("Unable to read authToken")
