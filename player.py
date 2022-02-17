@@ -16,7 +16,7 @@ class Player:
     def rank_map(self, map, rank):
         self.maps[map] = rank
 
-    def map_ranking(self):
+    def map_ranking(self) -> str:
         ranking = ""
         for map,value in self.maps.items():
             ranking += f"{map}: {value}\n"

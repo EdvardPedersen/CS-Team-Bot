@@ -10,21 +10,18 @@ class GenericMessageHandler:
         self.reaction_prefix = "reaction_"
         self.response = response
         self.help_text = help_text
-        self.private = reply_private
-        self.handlers = {}
-        self.handler = None
+        self.reply_private = reply_private
 
     async def unhandled(self,message):
         await self.reply(message, "Unimplemented")
 
     async def reply(self, input, response):
-        if self.private:
+        if self.reply_private:
             await input.author.send(response)
         else:
             await input.channel.send(response)
 
     async def dispatch(self, message, permission):
-        # Please, god, refactor me
         if isinstance(message, discord.Message):
             result = re.match("^!([a-zZ-a]*)", message.content)
             if result:
