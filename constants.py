@@ -25,3 +25,5 @@ class Permissions:
     standard = 1
     member = 2
     admin = 3
+
+team_size = 5
