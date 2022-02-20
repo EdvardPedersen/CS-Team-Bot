@@ -52,6 +52,9 @@ def _calculate_average_distance(players) -> float:
     return total_distance
 
 def get_ban_order(teams) -> str:
+    #idea : weight the 3 most wanted maps for each team with decreasing
+    #weights,ie:(10,5,2) to pull out wanted maps from the dataset
+    #sum the two distributions together and select the lowest ranked
     banorder = "**Banorder:**\n"
     for i,team in enumerate(teams):
         i += 1
