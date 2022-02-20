@@ -2,22 +2,37 @@ import math
 import constants
 import random
 
+def _choose_players(players, team_size) -> list:
+    chosen = []
+    for _ in range(team_size):
+        applicable = [player for player in players if player.chosen <= min([player.chosen for player in players])]
+        player = random.choice(applicable)
+        player.chosen += 1
+        chosen.append(player)
+
+    return chosen
+
 def roll_teams(players, num_matches) -> list:
     for player in players.values():
         player.chosen = 0
-    best_teams = [[]for _ in range(num_matches)]
+
+    player_pool = [player for player in players.values()]
+    best_teams = {}
     team_size = constants.team_size if len(players) >= constants.team_size else len(players)
+    
     for i in range(num_matches):
         best_score = math.inf
         for _ in range(100):
-            applicable = [player for player in players.values() if player.chosen <= min([player.chosen for player in players.values()])]
-            team = random.sample(applicable, k=team_size)
+            team = _choose_players(player_pool.copy(), team_size)
             score = _calculate_average_distance(team)
             if score < best_score:
                 best_score = score
                 best_teams[i] = team
-        for player in best_teams[i]:
-            player.chosen += 1
+
+        for player in player_pool:
+            for chosen_player in best_teams[i]:
+                if player.id == chosen_player.id:
+                    player.chosen += 1
 
     return best_teams
 
