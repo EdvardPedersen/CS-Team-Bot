@@ -34,7 +34,7 @@ class RegistrationHandler(GenericMessageHandler):
             await self.match_message.reply("Registration already active")
             return
         elif self.registration_status == "closed":
-            await self.reply(message, "Registration already done, please delete the old one before starting a new registration")
+            await self.match_message.reply("Registration already done, please delete the old one before starting a new registration")
             return
 
         arguments = re.match("^![a-zA-Z]*\s(\d{1,2}$)",message.content)
@@ -69,7 +69,6 @@ class RegistrationHandler(GenericMessageHandler):
             for reaction in self.match_message.reactions:
                 for u in await reaction.users().flatten():
                     self.matchday.players[u.id] = self.player_pool[u.id]
-            self.match_message = None
             self.registration_status = "closed"
             await self.reply(message,"Registration ended")
         else:
