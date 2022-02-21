@@ -53,7 +53,8 @@ class MatchDay():
 
     def get_teamlist(self) -> str:
         teams = ""
-        for i,team in enumerate(self.teams): 
+        print(type(self.teams))
+        for i,team in self.teams.items(): 
             i += 1
             teams += f"Team {i}:{[player.name for player in team]}\n"
         return teams

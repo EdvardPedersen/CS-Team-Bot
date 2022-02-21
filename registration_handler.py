@@ -37,7 +37,7 @@ class RegistrationHandler(GenericMessageHandler):
             await self.reply(message, "Registration already done, please delete the old one before starting a new registration")
             return
 
-        arguments = re.match("^![a-zA-Z]*\s(\d{1,2}$)")
+        arguments = re.match("^![a-zA-Z]*\s(\d{1,2}$)",message.content)
         if arguments:
             num_matches = int(arguments.group(1))
             if num_matches < 1:

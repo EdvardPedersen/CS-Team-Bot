@@ -12,7 +12,7 @@ def _choose_players(players, team_size) -> list:
 
     return chosen
 
-def roll_teams(players, num_matches) -> list:
+def roll_teams(players, num_matches):
     for player in players.values():
         player.chosen = 0
 
@@ -34,6 +34,7 @@ def roll_teams(players, num_matches) -> list:
                 if player.id == chosen_player.id:
                     player.chosen += 1
 
+    print(type(best_teams))
     return best_teams
 
 def _calculate_map_compatability(p1, p2) -> float:
@@ -56,7 +57,7 @@ def get_ban_order(teams) -> str:
     #weights,ie:(10,5,2) to pull out wanted maps from the dataset
     #sum the two distributions together and select the lowest ranked
     banorder = "**Banorder:**\n"
-    for i,team in enumerate(teams):
+    for i,team in teams.items():
         i += 1
         banorder += f"Team {i}: "
         b = {}
