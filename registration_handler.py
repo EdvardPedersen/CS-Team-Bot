@@ -63,7 +63,7 @@ class RegistrationHandler(GenericMessageHandler):
             await self.match_message.unpin()
             await self.match_message.delete()
             self.match_message = None
-            await self.reply("Cancelled match day registration")
+            await self.reply(message,"Cancelled match day registration")
         else:
             await self.reply(message,"No registration active")
     
