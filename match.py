@@ -1,5 +1,6 @@
 import datetime
-from team_roll import roll_teams, get_ban_order
+import constants
+from team_roll import roll_teams, get_ban_order, test_banorder
 
 
 class Match():
@@ -21,6 +22,8 @@ class MatchDay():
         self.num_matches = num_matches
         self.date = None
         self.playday = playday
+        self.map_pool = constants.maps
+        self.banned_maps = []
         self.weekdays = {
                 'Monday':0,
                 'Tuesday':1,
@@ -53,11 +56,22 @@ class MatchDay():
 
     def get_teamlist(self) -> str:
         teams = ""
-        print(type(self.teams))
         for i,team in self.teams.items(): 
             i += 1
-            teams += f"Team {i}:{[player.name for player in team]}\n"
+            teams += f"Team {i}:{[player.name for player in team.players]}\n"
         return teams
 
+    def ban(self, map):
+        self.banned_maps.append(map)
+
+    def unban(self, map):
+        self.banned_maps.remove(map)
+
     def banorder(self):
-        return get_ban_order(self.teams)
+        message = "**Banorder**\n"
+        banorder = get_ban_order(self.teams, self.banned_maps)
+        message += f"{banorder}\n"
+        return message
+
+    def test_banorder(self):
+        return test_banorder()

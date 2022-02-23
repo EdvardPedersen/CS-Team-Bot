@@ -3,6 +3,7 @@ from generic_message_handler import GenericMessageHandler
 from constants import Permissions, ranks, maps
 from player import Player
 from match import MatchDay
+from team_roll import test_banorder
 
 
 class RegistrationHandler(GenericMessageHandler):
@@ -25,6 +26,9 @@ class RegistrationHandler(GenericMessageHandler):
     async def message_banorder(self,message,permission):
         if permission < Permissions.admin:
             return
+        if not self.registration_status == "closed":
+            return
+
         await self.reply(message,f"{self.matchday.banorder()}")
 
     async def message_register(self,message,permission):
@@ -47,6 +51,7 @@ class RegistrationHandler(GenericMessageHandler):
         self.matchday = MatchDay({},num_matches)
 
         self.match_message = await message.channel.send(f"React to this post to sign up for the [{self.matchday.num_matches}] matches on: {self.matchday.date}")
+        await self.match_message.pin()
         self.registration_status = "open"
 
     async def message_cancel(self, message,permission):
@@ -55,6 +60,7 @@ class RegistrationHandler(GenericMessageHandler):
         if self.registration_status == "open":
             self.matchday = None
             self.registration_status = "ready"
+            await self.match_message.unpin()
             await self.match_message.delete()
             self.match_message = None
             await self.reply("Cancelled match day registration")
@@ -66,6 +72,7 @@ class RegistrationHandler(GenericMessageHandler):
             return
         if self.registration_status == "open":
             self.match_message = await message.channel.fetch_message(self.match_message.id)
+            await self.match_message.unpin()
             for reaction in self.match_message.reactions:
                 for u in await reaction.users().flatten():
                     self.matchday.players[u.id] = self.player_pool[u.id]
@@ -91,7 +98,8 @@ class RegistrationHandler(GenericMessageHandler):
             day = self.matchday.playday
             self.matchday = None
             self.registration_status = "ready"
-            await self.reply(message, f"Registration for matchday on {day}: {date} removed")
+            await message.author.send("Deleted registration")
+            # await self.reply(message, f"Registration for matchday on {day}: {date} removed")
 
     async def message_teams(self, message, permission):
         if permission < Permissions.admin:
@@ -173,12 +181,49 @@ class RegistrationHandler(GenericMessageHandler):
             return
         player = self.player_pool[message.author.id]
         try:
+            tmpmap = {}
             for i in range(len(maps)):
-                player.maps[res[i]] = len(maps) - i
+                if not res[i] in maps:
+                    raise KeyError(f"{res[i]}")
+                tmpmap[res[i]] = len(maps) - i
+            player.maps = tmpmap
+            await self.reply(message, "Maps registered")
         except Exception as e:
             print(e)
-            await message.author.send("Invalid map name")
-        await self.reply(message, "Maps registered")
+            await message.author.send(f"Invalid map name {e}")
+
+    async def message_ban(self,message,permission):
+        if permission<Permissions.admin:
+            return
+
+        if self.registration_status == "ready":
+            return
+        
+        input = message.content.split(' ')[1:]
+        for map in input:
+            if map in self.matchday.map_pool and map not in self.matchday.banned_maps:
+                self.matchday.banned_maps.append(map)
+
+    async def message_unban(self,message,permission):
+        if permission<Permissions.admin:
+            return
+
+        if self.registration_status == "ready":
+            return
+        
+        input = message.content.split(' ')[1:]
+        for map in input:
+            try:
+                self.matchday.banned_maps.remove(map)
+            except ValueError:
+                pass
+
+    async def message_test_banorder(self,message,permission):
+        if  permission<Permissions.admin:
+            return
+
+        await self.reply(message,test_banorder())
+        
 
             
 
