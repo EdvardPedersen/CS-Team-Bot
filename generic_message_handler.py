@@ -17,9 +17,10 @@ class GenericMessageHandler:
 
     async def reply(self, input, response):
         if self.reply_private:
-            await input.author.send(response)
+            message =  await input.author.send(response)
         else:
-            await input.channel.send(response)
+            message = await input.channel.send(response)
+        return message
 
     async def dispatch(self, message, permission):
         if isinstance(message, discord.Message):

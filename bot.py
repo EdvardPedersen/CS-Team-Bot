@@ -56,6 +56,10 @@ class CsBot(discord.Client):
                 self.broadcast_channel = channel
                 # await self.broadcast_channel.send("Bot online")
         
+        for handler in self.message_handlers:
+            if isinstance(handler,RegistrationHandler):
+                handler.teammembers = self.config.role
+        
         if not self.broadcast_channel:
             print("Could not set broadcast_channel")
 
