@@ -1,8 +1,20 @@
+#!/usr/bin/env python3
+
+import pickle
+import datetime
+import random
+import re
 import discord
+from pytube import Playlist
+from generic_message_handler import GenericMessageHandler
+from configuration import Configuration
+from match_handler import Match, RegistrationHandler
+from constants import Permissions
+from stupid import StupidityHandler
 '''
 Interface:
 
-!register - start registration for this weeks' match
+!register - start registration for next match(this week or next week default to wednesdays)
 - The bot gives a message that people react to to register
 - Manual stop of registration
 
@@ -20,14 +32,6 @@ Interface:
 '''
 
 
-class Configuration():
-    def __init__(self, admin, server, role):
-        self.super_user = admin
-        self.server = server
-        self.team_role = role
-        self.guild = ""
-        self.role = ""
-
 class CsBot(discord.Client):
     def __init__(self, config):
         intents = discord.Intents.default()
@@ -35,58 +39,83 @@ class CsBot(discord.Client):
         intents.reactions = True
         super().__init__(intents=intents)
         self.config = config
-        self.registration_active = False
-        self.registered_users = {}
-        self.registration_post = ""
+        self.broadcast_channel = None
+        self.message_handlers = []
+        self.reaction_handlers = []
+        registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
+        self.message_handlers.append(registrationhandler)
+        self.reaction_handlers.append(registrationhandler)
+        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
+        self.message_handlers.append(GenericMessageHandler("Sign up for season", "Signup not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("Opt out of the rest of the season", "Optout not implemented",True))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
         self.config.role = await self.get_role()
-        pass
+        for channel in self.get_all_channels():
+            if channel.name == self.config.broadcast_channel:
+                self.broadcast_channel = channel
+                # await self.broadcast_channel.send("Bot online")
+        
+        if not self.broadcast_channel:
+            print("Could not set broadcast_channel")
 
     async def get_role(self):
         for g in self.guilds:
+            print(g)
             for r in g.roles:
+                print(r)
                 if r.id == self.config.team_role:
                     self.config.guild = g
-                    print(r.members)
+                    print(r)
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        pass
+        permissions = await self.get_permissions(reaction.member)
+        for handler in self.reaction_handlers:
+            await handler.dispatch(reaction, permissions)
+
+    async def on_raw_reaction_remove(self, reaction):
+        members = self.get_all_members()
+        member = None
+        for m in members:
+            if m.id == reaction.user_id:
+                member = m
+        if not member:
+            return
+        reaction.member = member
+        permissions = await self.get_permissions(reaction.member)
+        for handler in self.reaction_handlers:
+            await handler.dispatch(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
-            return
-        permissions = await self.get_permissions(message.author)
-        if message.content.startswith('!register'):
-            if permissions == 3:
-                await self.start_registration()
-        if message.content.startswith("!maps"):
-            if permissions > 1:
-                await message.author.send("You can register preferences here")
-            else:
-                await message.author.send("You do not have permission to register map preferences")
+            return  
+        permissions = Permissions.restricted
+        if isinstance(message.channel,discord.TextChannel):
+            permissions = await self.get_permissions(message.author)
+        elif isinstance(message.channel, discord.DMChannel):
+            for member in self.get_all_members():
+                if member.id == message.author.id:
+                    permissions = await self.get_permissions(member)
+                    break
+        for handler in self.message_handlers:
+            await handler.dispatch(message, permissions)
 
-    async def start_registration(self):
-        self.registered_users = {}
-        self.registration_active = True
-        self.registration_post = await self.channel.send("Please react to this post to sign up for the next match.")
+    async def get_permissions(self, member):
+        if self.broadcast_channel.permissions_for(member).manage_roles:
+            return Permissions.admin
+        else:
+            return Permissions.restricted
 
-    async def get_permissions(self, user):
-        if user.id == self.config.super_user:
-            return 3
-        if user in self.config.role.members:
-            return 2
-        return 1
-        
+if __name__ == "__main__":
+    token = ""
+    try:
+        with open("auth") as f:
+            token = f.read()
+    except FileNotFoundError:
+        print("Unable to read authToken")
 
-
-token = ""
-with open("auth") as f:
-    token = f.read()
-
-
-
-config = Configuration(188422488080777217, 875657026775158805, 878372503196676106)
-client = CsBot(config)
-client.run(token)
+    config = Configuration()
+    client = CsBot(config)
+    client.run(token)
