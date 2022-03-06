@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.10
 
-import pickle
-import datetime
-import random
-import re
 import os
 import discord
 from pytube import Playlist
@@ -56,12 +52,15 @@ class CsBot(discord.Client):
                 self.broadcast_channel = channel
                 # await self.broadcast_channel.send("Bot online")
         
+        if not self.broadcast_channel:
+            self.close()
+            exit(f"Unable to set broadcast-channel {self.config.broadcast_channel}\n")
+
         for handler in self.message_handlers:
             if isinstance(handler,RegistrationHandler):
                 handler.teammembers = self.config.role
+                handler.broadcast_channel = self.broadcast_channel
         
-        if not self.broadcast_channel:
-            print("Could not set broadcast_channel")
 
     async def get_role(self):
         for g in self.guilds:
