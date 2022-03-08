@@ -25,7 +25,10 @@ class MatchDay():
     def __init__(self,users,num_matches=2,playday="Wednesday") -> None:
         self.players = users
         self.num_matches = num_matches
+        ["ready", "open", "closed"]
         self.status = "ready"
+        ["active", "inactive"]
+        self.veto = "ative"
         self.message = None
         self.banorder_message = None
         self.date = None
@@ -127,7 +130,7 @@ class MatchDay():
             self.players = {}
             await self.banorder_message.delete()
             self.banorder_message = None
-            self.status = "ready"
+            self.veto = "inactive"
 
     def next_match(self):
         reply = ""

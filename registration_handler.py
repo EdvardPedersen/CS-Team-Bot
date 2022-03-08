@@ -29,12 +29,13 @@ class RegistrationHandler(GenericMessageHandler):
 
     @permission_check
     async def message_banorder(self,message):
-        if self.matchday.banorder_message:
+        if self.matchday.veto == "active":
             await self.matchday.message.reply(":arrow_up:")
         else:
             try:
                 m = await self.reply(message, self.matchday.banorder())
                 self.matchday.set_banorder_message(m)
+                self.matchday.veto = "active"
             except AttributeError as err:
                 await self.reply(message, f"Matchday registration status: {err}")
             except NameError:
