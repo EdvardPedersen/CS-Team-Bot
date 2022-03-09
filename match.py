@@ -35,6 +35,7 @@ class MatchDay():
         self.playday = playday
         self.map_pool = constants.maps
         self.banned_maps = []
+        self.picked_maps = []
         self.shared_banorder = []
         self.available_maps = constants.maps.copy()
         self.weekdays = {
@@ -71,8 +72,10 @@ class MatchDay():
     def set_banorder_message(self, message):
         self.banorder_message = message
 
+    async def refetch_message(self):
+        self.message =  await self.message.channel.fetch_message(self.message.id)
+    
     async def registration_end(self, player_pool):
-        self.set_message(await self.message.channel.fetch_message(self.message.id))
         reply = ""
         if self.status == "open":
             for reaction in  self.message.reactions:
@@ -124,13 +127,20 @@ class MatchDay():
         
         return  reply
 
+    def reset_state(self):
+        self.veto = "inactive"
+        self.players = {}
+        self.teams = None
+        self.banned_maps = []
+        self.picked_maps = []
+        self.available_maps = constants.maps.copy()
+        self.status = "ready"
+
     async def delete(self):
         if self.status == "closed":
-            self.status = "ready"
-            self.players = {}
+            self.reset_state()
             await self.banorder_message.delete()
             self.banorder_message = None
-            self.veto = "inactive"
 
     def next_match(self):
         reply = ""
@@ -169,20 +179,42 @@ class MatchDay():
         for map in self.shared_banorder:
             if map in self.available_maps:
                 return map
+    
+    def get_next_pick(self):
+        maps =  reversed(self.shared_banorder)
+        for map in maps:
+            if map in self.available_maps:
+                return map
+
+    async def pick(self, map):
+        if self.banorder_message:
+            self.available_maps.remove(map)
+            self.picked_maps.append(map)
+            await self.banorder_message.edit(content=self.banorder())
+        else:
+            print(f"Picking:{map}")
+
+    async def unpick(self, map):
+        if self.banorder_message:
+            self.picked_maps.remove(map)
+            self.available_maps.append(map)
+            await self.banorder_message.edit(content=self.banorder())
+        else:
+            print(f"Unpicking:{map}")
 
     async def ban(self, map):
-        self.banned_maps.append(map)
-        self.available_maps.remove(map)
         if self.banorder_message:
+            self.available_maps.remove(map)
+            self.banned_maps.append(map)
             await self.banorder_message.edit(content=self.banorder())
         else:
             # TODO: log
             print(f"Banned:{map}")
 
     async def unban(self, map):
-        self.banned_maps.remove(map) 
-        self.available_maps.append(map)
         if self.banorder_message:
+            self.banned_maps.remove(map) 
+            self.available_maps.append(map)
             await self.banorder_message.edit(content=self.banorder())
         else:
             print(f"Unbanned: {map}")
@@ -193,17 +225,20 @@ class MatchDay():
         'private_banorders': dict{teamID<int> : Banorder<DiscordString>),..}  empty or more messages with teamID and their private banorder
         'shared_banorder': <DiscordString> empty or one message with shared  banorder for  all teams in  current  veto 
         'banned_maps': <DiscordString> empty or one  message with currently banned maps  in this veto
+        'picked_maps': <DiscordString> empty or one  message with currently picked maps  in this veto
         '''
         messages ={
             'private_banorders':{},
             'shared_banorder':"",
-            'banned_maps':""
+            'banned_maps':"",
+            'picket_maps':""
         }
         for team_num,team in self.teams.items():
             messages['private_banorders'][team_num] = DiscordString(f"Team {team_num}: {[player.name for player in team.players]}\nbanorder -> {team.get_banorder()}")
-        self.shared_banorder = self.get_shared_banorder(self.banned_maps)
+        self.shared_banorder = self.get_shared_banorder()
         messages['shared_banorder'] = DiscordString(f"{self.shared_banorder}")
         messages['banned_maps'] = DiscordString(f"{[map for map in self.banned_maps]}")
+        messages['picked_maps'] = DiscordString(f"{[map for map in self.picked_maps]}")
         return messages
 
     def banorder(self):
@@ -215,8 +250,9 @@ class MatchDay():
                 if not self.teams:
                     raise AttributeError("teams not rolled")
                 banorder_info = self._get_banorder_info()
-                reply += f"Shared banorder -> {banorder_info['shared_banorder'].to_code_block('ml')}"
-                reply += DiscordString(f"Banned maps -> {banorder_info['banned_maps']}").to_code_inline()
+                reply += f"Shared banorder: {banorder_info['shared_banorder'].to_code_block('ml')}"
+                reply += DiscordString(f"Banned maps -> {banorder_info['banned_maps'].to_code_inline()}\n")
+                reply += DiscordString(f"Picked maps -> {banorder_info['picked_maps'].to_code_inline()}\n")
             case "ready":
                 raise AttributeError("ready")
             case _:
@@ -240,10 +276,11 @@ class MatchDay():
 
         return preferences
 
-    def get_shared_banorder(self,banned_maps):
+    def get_shared_banorder(self):
         private_banorders = self.teams_private_banorder_copy()
         for banorder in private_banorders.values():
-            banorder.remove_banned_maps(banned_maps)
+            banorder.remove_banned_maps(self.banned_maps)
+            banorder.remove_picked_maps(self.picked_maps)
             banorder.amplify_most_wanted()
 
         shared_banorder  = self.shared_weighted_preference(private_banorders).to_list_sorted()

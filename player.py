@@ -26,7 +26,8 @@ class Player:
         return ranking
 
     def get_info(self):
-        s = f"{self.name} is rank {constants.ranks[self.rank]} and has map order: |"
+        # TODO Split into multiple messages, upto 2000bytes each
+        s = f"{self.name} is rank {constants.ranks[self.rank]} and has map order: | "
         for map in sorted(self.maps, key = lambda x: self.maps[x], reverse=True):
             s += map + " | "
         return s

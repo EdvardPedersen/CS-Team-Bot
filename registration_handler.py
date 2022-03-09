@@ -56,6 +56,7 @@ class RegistrationHandler(GenericMessageHandler):
     
     @permission_check
     async def message_end(self, message):
+        await self.matchday.refetch_message()
         await self.reply(message,await self.matchday.registration_end(self.player_pool))
 
     @permission_check
@@ -170,7 +171,19 @@ class RegistrationHandler(GenericMessageHandler):
     async def message_unban(self,message):
         maps = message.content.split(' ')[1:]
         for map in maps:
-            self.matchday.unban(map)
+            await self.matchday.unban(map)
+
+    @permission_check
+    async def message_pick(self, message):
+        maps = message.content.split(' ')[1:]
+        for map in maps:
+            await self.matchday.pick(map)
+    
+    @permission_check
+    async def message_unpick(self, message):
+        maps = message.content.split(' ')[1:]
+        for map in maps:
+            await self.matchday.unpick(map)
 
     @permission_check
     async def message_test_banorder(self,message):

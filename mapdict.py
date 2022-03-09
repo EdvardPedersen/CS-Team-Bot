@@ -19,6 +19,14 @@ class MapDict(dict):
                 # TODO log it
                 pass
 
+    def remove_picked_maps(self, picked_maps):
+        for picked_map in picked_maps:
+            try:
+                del self[picked_map]
+            except NameError:
+                #TODO log it
+                pass
+
     def to_list(self):
         return list(self)
 
