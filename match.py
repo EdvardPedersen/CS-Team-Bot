@@ -3,7 +3,7 @@ import random
 import constants
 import re
 from player import Player
-from team_roll import roll_teams
+from team import roll_teams
 from  helper_functions import DiscordString
 from mapdict import MapDict
 
@@ -165,7 +165,7 @@ class MatchDay():
     def get_teamlist(self) -> str:
         teams = ""
         for i,team in self.teams.items():
-            teams += f"Team {i}:{[player.name for player in team.players]}\n"
+            teams += team.get_info()
         return teams
 
     def banorder_formatted_message(self, format_type):
@@ -219,6 +219,36 @@ class MatchDay():
         else:
             print(f"Unbanned: {map}")
 
+    def team_to_map_fit(self):
+        scores = {}
+        for map in  self.picked_maps:
+            scores[map] = {}
+            for id,team in  self.teams.items():
+                scores[map][id]=0
+                for player in team.players:
+                    scores[map][id] += player.maps[map]
+                try:
+                    scores[map][id] /= len(team.players)
+                except ZeroDivisionError:
+                    pass
+        for map in self.available_maps:
+            scores[map] ={}
+            for id,team in  self.teams.items():
+                scores[map][id]=0
+                for player in team.players:
+                    scores[map][id] += player.maps[map]
+                try:
+                    scores[map][id] /= len(team.players)
+                except ZeroDivisionError:
+                    pass
+        pprint = ""
+        for map, teams in scores.items():
+            pprint += f"{map}: "
+            for team,score in teams.items():
+                pprint += f"Team{team}[{score}] "
+            pprint  += "\n"
+        return pprint
+
     def _get_banorder_info(self):
         '''
         Returns  dictionary with formatting:
@@ -226,6 +256,7 @@ class MatchDay():
         'shared_banorder': <DiscordString> empty or one message with shared  banorder for  all teams in  current  veto 
         'banned_maps': <DiscordString> empty or one  message with currently banned maps  in this veto
         'picked_maps': <DiscordString> empty or one  message with currently picked maps  in this veto
+        'team_fit':  <DiscordString> empty or one message with team score for each map picked in veto
         '''
         messages ={
             'private_banorders':{},
@@ -239,6 +270,7 @@ class MatchDay():
         messages['shared_banorder'] = DiscordString(f"{self.shared_banorder}")
         messages['banned_maps'] = DiscordString(f"{[map for map in self.banned_maps]}")
         messages['picked_maps'] = DiscordString(f"{[map for map in self.picked_maps]}")
+        messages['team_fit'] = DiscordString(f"{self.team_to_map_fit()}")
         return messages
 
     def banorder(self):
@@ -253,6 +285,7 @@ class MatchDay():
                 reply += f"Shared banorder: {banorder_info['shared_banorder'].to_code_block('ml')}"
                 reply += DiscordString(f"Banned maps -> {banorder_info['banned_maps'].to_code_inline()}\n")
                 reply += DiscordString(f"Picked maps -> {banorder_info['picked_maps'].to_code_inline()}\n")
+                reply += DiscordString(f"{banorder_info['team_fit'].to_code_inline()}")
             case "ready":
                 raise AttributeError("ready")
             case _:

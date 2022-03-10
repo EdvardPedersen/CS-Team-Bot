@@ -2,7 +2,13 @@ import constants
 import match
 from player import Player
 import random
-import discord
+
+
+def infinite_sequence():
+    num = 0
+    while True:
+        yield num
+        num += 1
 
 class TestChannel():
     def __init__(self, parent) -> None:
@@ -27,10 +33,12 @@ class TestMessage():
         pass
 
 async def test_banorder():
-    num_matches = 3
+    num_matches = 2
+    num_players = 8
+    id_gen = infinite_sequence()
     players =  {}
-    for i in  range(6):
-        players[i] = Player.generate_random()
+    for i in  range(num_players):
+        players[i] = Player.generate_random(next(id_gen))
 
     matchday =  match.MatchDay({})
     for player in  players.values():
@@ -46,7 +54,7 @@ async def test_banorder():
     print("Veto:(As home team)\n")
     for i in  range(6):
         #ban ban ban  pick  pick
-        if i<5: # ban
+        if i<4: # ban
             if  not i%2:
                 map = matchday.get_next_ban()
                 print(f"Banning by preference: {map}")
@@ -66,5 +74,7 @@ async def test_banorder():
                 await matchday.pick(map)
         print(matchday.banorder())
 
-    log =f"\n~~Veto Result~~\nPicked: {matchday.picked_maps}\nBanned:{matchday.banned_maps}\nAvailable:{matchday.available_maps}\n"
+    # log =f"\n~~Veto Result~~\nPicked: {matchday.picked_maps}\nBanned:{matchday.banned_maps}\nAvailable:{matchday.available_maps}\n"
+    log = f"\n~~Veto Result~~\n"
+    log += f"{matchday.banorder()}"
     return  log

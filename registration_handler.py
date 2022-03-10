@@ -71,8 +71,8 @@ class RegistrationHandler(GenericMessageHandler):
     async def message_teams(self, message):
         if not self.matchday:
             await self.reply(message, "No matches found")
-            return
-        await self.reply(message, self.matchday.get_teamlist())
+        else:
+            await self.reply(message, self.matchday.get_teamlist())
 
     @permission_check
     async def reaction_add(self,reaction):

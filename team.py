@@ -5,7 +5,8 @@ from player import  Player
 from mapdict import MapDict
 
 class Team():
-    def __init__(self,players) -> None:
+    def __init__(self,id,players) -> None:
+        self.id = id
         self.overallcompatability = math.inf
         self.rankcompatability = 0
         self.mapcompatability = 0
@@ -15,6 +16,9 @@ class Team():
         self.calculate_rank_score()
         self.calculate_map_score()
         self.calculate_overall_compatability()
+
+    def get_info(self) -> str:
+        return f"Team{self.id}:{[player.name for player in self.players]}:[{self.rankcompatability}]\n"
 
     def set_map_preference(self):
         for map in constants.maps:
@@ -80,7 +84,7 @@ def roll_teams(players, num_matches):
         best_score = math.inf
         best_team = None
         for _ in range(100):
-            team = Team(_choose_players(player_pool.copy(), team_size))
+            team = Team(i,_choose_players(player_pool.copy(), team_size))
             if team.overallcompatability < best_score:
                 best_score = team.overallcompatability
                 best_team = team

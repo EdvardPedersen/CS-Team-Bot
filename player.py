@@ -26,7 +26,6 @@ class Player:
         return ranking
 
     def get_info(self):
-        # TODO Split into multiple messages, upto 2000bytes each
         s = f"{self.name} is rank {constants.ranks[self.rank]} and has map order: | "
         for map in sorted(self.maps, key = lambda x: self.maps[x], reverse=True):
             s += map + " | "
@@ -41,8 +40,7 @@ class Player:
             diff  += euclidean_distance(self.maps[map], player.maps[map])
         return diff
 
-    def generate_random():
-        id = random.randint(0,0xFFFFFFFF)
+    def generate_random(id=random.randint(0,0xFFFFFFFF)):
         player = Player(id,str(id))
         player.rank = random.randint(1,18)
         player.maps = {}

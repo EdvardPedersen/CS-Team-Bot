@@ -34,7 +34,7 @@ class Configuration():
             print(e)
             print(type(e))
             exit()
-
+    
     def setup(self):
         config = {}
         loaded = False

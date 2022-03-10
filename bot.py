@@ -39,11 +39,6 @@ class CsBot(discord.Client):
         self.broadcast_channel = None
         self.message_handlers = []
         self.reaction_handlers = []
-        registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
-        self.message_handlers.append(registrationhandler)
-        self.reaction_handlers.append(registrationhandler)
-        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def on_ready(self):
         self.config.role = await self.get_role()
@@ -53,14 +48,16 @@ class CsBot(discord.Client):
                 # await self.broadcast_channel.send("Bot online")
         
         if not self.broadcast_channel:
-            self.close()
-            exit(f"Unable to set broadcast-channel {self.config.broadcast_channel}\n")
-
-        for handler in self.message_handlers:
-            if isinstance(handler,RegistrationHandler):
-                handler.teammembers = self.config.role
-                handler.broadcast_channel = self.broadcast_channel
+            await self.close()
+            exit(f"Unable to set broadcast-channel: {self.config.broadcast_channel}\n")
         
+        registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
+        registrationhandler.teammembers  = self.config.role
+        registrationhandler.broadcast_channel = self.broadcast_channel
+        self.message_handlers.append(registrationhandler)
+        self.reaction_handlers.append(registrationhandler)
+        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
+        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
 
     async def get_role(self):
         for g in self.guilds:
@@ -77,15 +74,18 @@ class CsBot(discord.Client):
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
 
-    async def on_raw_reaction_remove(self, reaction):
-        members = self.get_all_members()
+    def get_member(self, id) -> discord.Member:
         member = None
-        for m in members:
-            if m.id == reaction.user_id:
+        for m in self.get_all_members():
+            if m.id  == id:
                 member = m
-        if not member:
+                break
+        return member
+
+    async def on_raw_reaction_remove(self, reaction):
+        reaction.member = self.get_member(reaction.id)
+        if not reaction.member:
             return
-        reaction.member = member
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
@@ -97,10 +97,10 @@ class CsBot(discord.Client):
         if isinstance(message.channel,discord.TextChannel):
             permissions = await self.get_permissions(message.author)
         elif isinstance(message.channel, discord.DMChannel):
-            for member in self.get_all_members():
-                if member.id == message.author.id:
-                    permissions = await self.get_permissions(member)
-                    break
+            member = self.get_member(message.author.id)
+            if member:
+                permissions = await self.get_permissions(member)
+
         for handler in self.message_handlers:
             await handler.dispatch(message, permissions)
 
