@@ -156,7 +156,7 @@ class RegistrationHandler(GenericMessageHandler):
                 if not res[i] in constants.maps:
                     raise KeyError(f"{res[i]}")
                 tmpmap[res[i]] = len(constants.maps) - i
-            for map in constants.map:
+            for map in constants.maps:
                 if map not in tmpmap.keys():
                     tmpmap[map] = 0
             player.maps = tmpmap
