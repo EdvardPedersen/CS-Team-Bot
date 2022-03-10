@@ -1,4 +1,5 @@
 import math
+import statistics
 import constants
 import random
 from player import  Player
@@ -40,8 +41,8 @@ class Team():
         team.set_map_preference()
     
     def calculate_rank_score(self, all_players):
-        avg_rank = avg([player.rank for player in all_players])
-        avg_team = avg([player.rank for player in self.players])
+        avg_rank = statistics.mean([player.rank for player in all_players])
+        avg_team = statistics.mean([player.rank for player in self.players])
         self.rankcompatability = abs(avg_team - avg_rank)
 
     def calculate_map_score(self) -> float:
@@ -69,17 +70,17 @@ def _choose_players(players, team_size) -> list:
     return chosen
 
 def roll_teams(players, num_matches):
-    for player in players.values():
+    player_pool = [player for player in players.values()]
+    for player in player_pool:
         player.chosen = 0
 
-    player_pool = [player for player in players.values()]
     best_teams = {}
     team_size = constants.team_size if len(players) >= constants.team_size else len(players)
     for i in range(num_matches):
         best_score = math.inf
         best_team = None
         for _ in range(100):
-            team = Team(i,_choose_players(player_pool.copy(), team_size))
+            team = Team(_choose_players(player_pool.copy(),team_size),player_pool)
             if team.overallcompatability < best_score:
                 best_score = team.overallcompatability
                 best_team = team
