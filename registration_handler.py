@@ -1,4 +1,5 @@
 import re
+from helper_functions import DiscordString
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions, ranks, maps
 from player import Player
@@ -22,10 +23,10 @@ class RegistrationHandler(GenericMessageHandler):
 
     @permission_check
     async def message_list_players(self, message):
-        players_message = "UiT Players:"
+        players_message = "     UiT Players: \n"
         for player in self.player_pool.values():
             players_message += f"\n{player.get_info()}"
-        await self.reply(message, players_message)
+        await self.reply(message, f"``` \n {players_message} ``` \n")
 
     @permission_check
     async def message_banorder(self,message):
