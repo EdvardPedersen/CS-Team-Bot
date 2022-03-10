@@ -49,7 +49,8 @@ async def test_banorder():
     print(matchday.registration_start(f"!register {num_matches}"))
     print(await matchday.registration_end(players))
     print([player.id for player in players.values()])
-    print(matchday.get_teamlist())
+    for team in  matchday.teams.values():
+        print(team.get_info())
     print(matchday.banorder())
     print("Veto:(As home team)\n")
     for i in  range(6):

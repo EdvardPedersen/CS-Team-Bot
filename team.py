@@ -19,7 +19,7 @@ class Team():
         self.calculate_overall_compatability()
 
     def get_info(self) -> str:
-        return f"Team{self.id}:{[player.name for player in self.players]}:[{self.rankcompatability}]\n"
+        return f"Team{self.id}:{[player.name for player in self.players]}:[{self.rankcompatability}][{self.mapcompatability}][{self.overallcompatability}]\n"
 
     def set_map_preference(self):
         for map in constants.maps:
@@ -41,9 +41,13 @@ class Team():
         team.set_map_preference()
     
     def calculate_rank_score(self, all_players):
-        avg_rank = statistics.mean([player.rank for player in all_players])
-        avg_team = statistics.mean([player.rank for player in self.players])
-        self.rankcompatability = abs(avg_team - avg_rank)
+        try:
+            avg_rank = statistics.mean([player.rank for player in all_players])
+            avg_team = statistics.mean([player.rank for player in self.players])
+        except statistics.StatisticsError:
+            avg_rank = 0
+            avg_team = 0
+        self.rankcompatability = round(abs(avg_team - avg_rank),3)
 
     def calculate_map_score(self) -> float:
         total_distance = 0
@@ -52,8 +56,10 @@ class Team():
                 if other_player == player:
                     continue
                 total_distance += player.map_compatability(other_player)
-        self.mapcompatability = total_distance
-        return total_distance
+        try:
+            self.mapcompatability = round((total_distance/(len(constants.maps)*len(self.players))),3)
+        except ZeroDivisionError:
+            self.mapcompatability = total_distance
 
     def calculate_overall_compatability(self):
         self.overallcompatability = self.rankcompatability + self.mapcompatability
@@ -80,7 +86,7 @@ def roll_teams(players, num_matches):
         best_score = math.inf
         best_team = None
         for _ in range(100):
-            team = Team(_choose_players(player_pool.copy(),team_size),player_pool)
+            team = Team(i,_choose_players(player_pool.copy(),team_size),player_pool)
             if team.overallcompatability < best_score:
                 best_score = team.overallcompatability
                 best_team = team
