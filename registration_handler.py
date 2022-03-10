@@ -1,6 +1,7 @@
 import re
 from generic_message_handler import GenericMessageHandler
-from constants import Permissions, ranks, maps
+import constants
+from constants import Permissions
 from player import Player
 from match import MatchDay
 from tests import test_banorder
@@ -91,14 +92,14 @@ class RegistrationHandler(GenericMessageHandler):
     @permission_check
     async def message_list_maps(self, message):
         reply =  "Active duty maps: | "
-        for map in maps:
+        for map in constants.maps:
             reply  += f"{map} |"
         reply += "\n"
         self.reply(message, reply)
 
     def list_ranks(self):
         r = ""
-        for rank, title in  ranks.items():
+        for rank, title in  constants.ranks.items():
             r += f"{rank}: {title}\n"
         return  r
 
@@ -124,7 +125,7 @@ class RegistrationHandler(GenericMessageHandler):
         else:
             player = self.player_pool[message.author.id]
             player.set_rank(rank)
-        await message.author.send(f"Your registered rank:{ranks[rank]}")
+        await message.author.send(f"Your registered rank:{constants.ranks[rank]}")
 
     @permission_check
     async def message_map_info_player(self,message):
@@ -135,7 +136,7 @@ class RegistrationHandler(GenericMessageHandler):
 
     def _list_maps(self) -> str:
         mapslist = ""
-        for map in maps:
+        for map in constants.maps:
             mapslist += f"{map} "
         return mapslist
 
@@ -151,10 +152,13 @@ class RegistrationHandler(GenericMessageHandler):
         player = self.player_pool[message.author.id]
         try:
             tmpmap = {}
-            for i in range(len(maps)):
-                if not res[i] in maps:
+            for i in range(len(constants.maps)):
+                if not res[i] in constants.maps:
                     raise KeyError(f"{res[i]}")
-                tmpmap[res[i]] = len(maps) - i
+                tmpmap[res[i]] = len(constants.maps) - i
+            for map in constants.map:
+                if map not in tmpmap.keys():
+                    tmpmap[map] = 0
             player.maps = tmpmap
             await self.reply(message, "Maps registered")
         except Exception as e:
