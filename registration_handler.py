@@ -22,9 +22,9 @@ class RegistrationHandler(GenericMessageHandler):
 
     @permission_check
     async def message_list_players(self, message):
-        players_message = "UiT Players: \n"
+        players_message = "UiT Players:"
         for player in self.player_pool.values():
-            players_message += player.get_info()
+            players_message += f"\n{player.get_info()}"
         await self.reply(message, players_message)
 
     @permission_check
