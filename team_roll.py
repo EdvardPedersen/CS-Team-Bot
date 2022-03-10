@@ -5,14 +5,14 @@ from player import  Player
 from mapdict import MapDict
 
 class Team():
-    def __init__(self,players) -> None:
+    def __init__(self,players, all_players) -> None:
         self.overallcompatability = math.inf
         self.rankcompatability = 0
         self.mapcompatability = 0
         self.players = players
         self.map_preference = MapDict()
         self.set_map_preference()
-        self.calculate_rank_score()
+        self.calculate_rank_score(all_players)
         self.calculate_map_score()
         self.calculate_overall_compatability()
 
@@ -34,16 +34,11 @@ class Team():
             players.append(Player.generate_random())
         team = Team(players)
         team.set_map_preference()
-
-    def calculate_rank_score(self):
-        total_distance = 0
-        for player in self.players:
-            for other_player in self.players:
-                if other_player == player:
-                    continue
-                total_distance += player.rank_compatability(other_player)
-        self.rankcompatability = total_distance
-        return total_distance
+    
+    def calculate_rank_score(self, all_players):
+        avg_rank = avg([player.rank for player in all_players])
+        avg_team = avg([player.rank for player in self.players])
+        self.rankcompatability = abs(avg_team - avg_rank)
 
     def calculate_map_score(self) -> float:
         total_distance = 0
