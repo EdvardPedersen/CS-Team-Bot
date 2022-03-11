@@ -1,5 +1,4 @@
 import re
-from helper_functions import DiscordString
 from generic_message_handler import GenericMessageHandler
 from constants import Permissions, ranks, maps
 from player import Player
