@@ -23,10 +23,10 @@ class RegistrationHandler(GenericMessageHandler):
 
     @permission_check
     async def message_list_players(self, message):
-        players_message = "     UiT Players: \n"
+        players_message = f"UiT Players: \n"
         for player in self.player_pool.values():
-            players_message += f"\n{player.get_info()}"
-        await self.reply(message, f"``` \n {players_message} ``` \n")
+            players_message += f"`{player.get_info()}`\n"
+        await self.reply(message, players_message)
 
     @permission_check
     async def message_banorder(self,message):
