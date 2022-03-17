@@ -1,8 +1,7 @@
 import constants
 
 class MapDict(dict):
-
-
+    
     def amplify_most_wanted(self):
         factor = len(self.keys())
         weights = [16*factor,8*factor,4*factor]

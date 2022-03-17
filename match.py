@@ -93,7 +93,7 @@ class MatchDay():
         return reply
 
     def registration_start(self, arguments):
-        arguments = re.match("^![a-zA-Z]*\s(\d{1,2}$)",arguments)
+        arguments = re.match("^![a-zA-Z]*\s(\d{1,2})$",arguments)
         if arguments:
             num_matches = int(arguments.group(1))
             if num_matches < 1:
@@ -325,6 +325,6 @@ class MatchDay():
 
     async def unpin(self):
         await self.message.unpin()
-    
+
     async def reply(self, message):
         await self.message.reply(message)

@@ -8,6 +8,7 @@ from configuration import Configuration
 from registration_handler import RegistrationHandler
 from constants import Permissions
 from stupid import StupidityHandler
+from test_handler import TestHandler
 '''
 Interface:
 
@@ -58,6 +59,9 @@ class CsBot(discord.Client):
         self.reaction_handlers.append(registrationhandler)
         self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
         self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        testHandler = TestHandler("Public tests","Not implemented",True)
+        self.message_handlers.append(testHandler)
+        self.reaction_handlers.append(testHandler)
 
     async def get_role(self):
         for g in self.guilds:
@@ -105,8 +109,10 @@ class CsBot(discord.Client):
             await handler.dispatch(message, permissions)
 
     async def get_permissions(self, member):
-        if self.broadcast_channel.permissions_for(member).manage_roles:
+        if member.id == self.config.owner:
             return Permissions.admin
+        elif self.broadcast_channel.permissions_for(member).manage_roles:
+            return Permissions.member
         else:
             return Permissions.restricted
 

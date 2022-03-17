@@ -1,20 +1,23 @@
 import constants
 import random
 
-from helper_functions import euclidean_distance
+from helper_functions import euclidean_distance, DiscordString
+from mapdict import MapDict
 
 class Player:
     def __init__(self, id, name):
         self.id = id
         self.name = name
         self.rank = 1
+        self.title = constants.ranks[self.rank]
         self.matches = 0
-        self.maps = {}
+        self.maps = MapDict()
         for map in constants.maps:
             self.maps[map] = 0
 
     def set_rank(self, new_rank):
         self.rank = new_rank
+        self.title = constants.ranks[self.rank]
 
     def rank_map(self, map, rank):
         self.maps[map] = rank
@@ -25,10 +28,15 @@ class Player:
             ranking += f"{map}: {value}\n"
         return ranking
 
+    def map_order(self):
+        order = DiscordString("| ")
+        for map in self.maps.to_list_sorted():
+            order += f"{map} | "
+        return order.to_code_inline()
+
     def get_info(self):
-        s = f"{self.name} is rank {constants.ranks[self.rank]} and has map order: | "
-        for map in sorted(self.maps, key = lambda x: self.maps[x], reverse=True):
-            s += map + " | "
+        s = f"{self.name} is rank {self.title} and has map order: "
+        s += self.map_order()
         return s
 
     def rank_compatability(self, player) -> float:

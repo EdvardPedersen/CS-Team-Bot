@@ -1,5 +1,26 @@
 import math
+import constants
 
+
+def member_check(function):
+    async def inner(self, message, permissions):
+        if permissions < constants.Permissions.member:
+            return
+        await function(self,message)
+    return inner
+
+def admin_check(function):
+    async def inner(self,message,permissions):
+        if permissions<constants.Permissions.admin:
+            return
+        await function(self,message)
+    return inner
+
+def infinite_sequence_gen(self):
+    num = 0
+    while True:
+        yield num
+        num += 1
 
 def euclidean_distance(val1, val2):
     return math.sqrt((val1-val2)**2)

@@ -1,7 +1,6 @@
 import re
 import inspect
 import discord
-from constants import Permissions
 
 class GenericMessageHandler:
     def __init__(self, help_text, response,reply_private):   
