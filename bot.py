@@ -67,7 +67,7 @@ class CsBot(discord.Client):
     def log_setup(self):
         log_format = "%(levelname)s %(name)s %(asctime)s - %(message)s"
         logging.basicConfig(filename=f"{self.__class__.__name__}.log",
-                    filemode="w",
+                    filemode="a",
                     format=log_format,
                     level=logging.INFO)
         self.log = logging.getLogger(__name__)

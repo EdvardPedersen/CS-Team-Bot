@@ -1,9 +1,11 @@
+from curses.ascii import FS
+import os
 import re
 import pickle
 import logging
 import constants
 from generic_message_handler import GenericMessageHandler
-from helper_functions import member_check
+from helper_functions import DiscordString, member_check
 from mapdict import MapDict
 from player import Player
 from match import MatchDay
@@ -39,15 +41,23 @@ class RegistrationHandler(GenericMessageHandler):
         self.read_state()
 
     def read_state(self):
+        self.log.info("Reading player state")
         try:
             with open(self.persist_file, "rb") as f:
                 self.player_pool = pickle.load(f)
         except FileNotFoundError:
             with open(self.persist_file, "wb") as f:
-                print()
+                self.log.info(f"Created playerdb: {self.persist_file}")
                 pass
         except EOFError:
-            pass
+            fSize = os.stat(self.persist_file).st_size
+            match fSize:
+                case 0:
+                    self.log.warning("EOF, empty player db")
+                case _:
+                    self.log.error("EOF, likely corrupt player db")
+        except Exception:
+            self.log.exception("Unexpected exception")
 
     @member_check
     @log
@@ -153,7 +163,7 @@ class RegistrationHandler(GenericMessageHandler):
         else:
             player = self.player_pool[message.author.id]
             player.set_rank(rank)
-        await message.author.send(f"Your registered rank:{player.rank}")
+        await message.author.send(f"Your registered rank: {constants.ranks[player.rank]}")
 
     @member_check
     @log
@@ -208,7 +218,7 @@ class RegistrationHandler(GenericMessageHandler):
                 if map not in tmpmap.keys():
                     tmpmap[map] = 0
             player.maps = tmpmap
-            await self.reply(message, "Maps registered")
+            await self.reply(message, DiscordString(f"{player.maps}").to_code_block("ml"))
         except Exception as e:
             await message.author.send(f"Invalid map name {e}")
 
