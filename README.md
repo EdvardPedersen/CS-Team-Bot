@@ -3,9 +3,10 @@ Discord bot for Counter-strike.
 
 # Interface
 ```
-!register - start registration for next match(this week or next week default to wednesdays)
+!register [number of maps]{2} - start registration for next match(this week or next week default to wednesdays)
 - The bot gives a message that people react to to register
 - Manual stop of registration
+
 
 !cancel - cancel ongoing registration for next match
   - Remove registration completely, including registration post
