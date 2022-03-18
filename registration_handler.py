@@ -1,8 +1,10 @@
-from curses.ascii import FS
+
+from email.message import Message
 import os
 import re
 import pickle
 import logging
+import discord
 import constants
 from generic_message_handler import GenericMessageHandler
 from helper_functions import DiscordString, member_check
@@ -22,8 +24,11 @@ def persist_state(function):
 
 def log(function):
     async def inner(self,message):
-        self.log.info(f"{message.author} calling: {function.__name__}")
-        self.log.debug(f"Message content: {message.content}")
+        if isinstance(message, discord.RawReactionActionEvent):
+            self.log.info(f"{message.user_id} calling: {function.__name__}")
+        elif isinstance(message, discord.Message):
+            self.log.info(f"{message.author} calling: {function.__name__}")
+            self.log.debug(f"Message content: {message.content}")
         await function(self,message)
         self.log.debug(f"OK")
     return inner

@@ -163,9 +163,10 @@ class MatchDay():
         self.date =  today + datetime.timedelta(days_to)
 
     def get_teamlist(self) -> str:
-        teams = ""
+        teams = DiscordString("")
         for i,team in self.teams.items():
             teams += team.get_info()
+        teams = teams.to_code_block("ml")
         return teams
 
     def banorder_formatted_message(self, format_type):

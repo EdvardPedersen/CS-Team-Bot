@@ -105,7 +105,10 @@ class CsBot(discord.Client):
                     return r
 
     async def on_raw_reaction_add(self, reaction):
-        self.log.debug(f"Raw reaction add from {reaction.id}")
+        self.log.debug(f"Raw reaction add from {reaction.user_id}")
+        reaction.member = self.get_member(reaction.user_id)
+        if not reaction.member:
+            return
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
@@ -119,8 +122,8 @@ class CsBot(discord.Client):
         return member
 
     async def on_raw_reaction_remove(self, reaction):
-        self.log.debug(f"Raw reaction remove from: {reaction.id}")
-        reaction.member = self.get_member(reaction.id)
+        self.log.debug(f"Raw reaction remove from: {reaction.user_id}")
+        reaction.member = self.get_member(reaction.user_id)
         if not reaction.member:
             return
         permissions = await self.get_permissions(reaction.member)
