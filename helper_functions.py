@@ -18,7 +18,7 @@ def admin_check(function):
     return inner
 
 
-def infinite_sequence_gen(self):
+def infinite_sequence_gen():
     num = 0
     while True:
         yield num
