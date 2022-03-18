@@ -2,7 +2,7 @@ auth
 previous
 admins
 config
-CsBot.log
-server_players.db
 _*
-.*
+.*  
+*.log
+*.db
