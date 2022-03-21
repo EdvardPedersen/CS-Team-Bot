@@ -139,8 +139,9 @@ class MatchDay():
     async def delete(self):
         if self.status == "closed":
             self.reset_state()
-            await self.banorder_message.delete()
-            self.banorder_message = None
+            if self.banorder_message:
+                await self.banorder_message.delete()
+                self.banorder_message = None
 
     def next_match(self):
         reply = ""

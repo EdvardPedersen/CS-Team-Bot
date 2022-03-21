@@ -32,12 +32,19 @@ def log(function):
         await function(self,message)
         self.log.debug(f"OK")
     return inner
-        
+
 
 class RegistrationHandler(GenericMessageHandler):
     def __init__(self, persist_file, help_text, response, reply_private):
         super().__init__(help_text, response, reply_private)
+        log_format = "%(levelname)s %(name)s %(asctime)s - %(message)s"
+        handler = logging.FileHandler(f"{self.__class__.__name__}.log","w")
+        handler.setFormatter(logging.Formatter(log_format))
+        handler.setLevel(logging.INFO)
         self.log = logging.getLogger(self.__class__.__name__)
+        self.log.addHandler(handler)
+        self.log.setLevel(logging.INFO)
+        
         self.broadcast_channel = None
         self.persist_file = persist_file
         self.teammembers = None
@@ -210,6 +217,7 @@ class RegistrationHandler(GenericMessageHandler):
             self.player_pool[player.id] = player
         res = message.content.split(' ')[1:]
         if len(res) != 7:
+            self.log.debug(f"Invalid list of maps: {res}")
             await self.reply(message, f"Please give map preference as a space-separated list from most wanted to least wanted map like:\n`!maps {self._list_maps()}`")
             return
         player = self.player_pool[message.author.id]
@@ -225,6 +233,7 @@ class RegistrationHandler(GenericMessageHandler):
             player.maps = tmpmap
             await self.reply(message, DiscordString(f"{player.maps}").to_code_block("ml"))
         except Exception as e:
+            self.log.exception(f"Invalid map name: {e}")
             await message.author.send(f"Invalid map name {e}")
 
     @member_check

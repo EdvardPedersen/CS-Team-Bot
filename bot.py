@@ -6,6 +6,7 @@ import discord
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
 from registration_handler import RegistrationHandler
+from admin_handler import AdminHandler
 from constants import Permissions
 from stupid import StupidityHandler
 from test_handler import TestHandler
@@ -61,16 +62,15 @@ class CsBot(discord.Client):
         testHandler = TestHandler("Public tests", "Not implemented", True)
         self.message_handlers.append(testHandler)
         self.reaction_handlers.append(testHandler)
+        self.message_handlers.append(AdminHandler(self,"Admin handler","Not Implemented", True))
         self.log.debug("testHandler... OK")
-        self.log.info("OK")
+        self.log.info("Handlers set up")
 
     def log_setup(self):
         log_format = "%(levelname)s %(name)s %(asctime)s - %(message)s"
-        logging.basicConfig(filename=f"{self.__class__.__name__}.log",
-                    filemode="a",
-                    format=log_format,
-                    level=logging.INFO)
-        self.log = logging.getLogger(__name__)
+        logging.basicConfig(filename=f"{self.__class__.__name__}.log",filemode="w",format=log_format,level=logging.INFO)
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.setLevel(logging.DEBUG)
 
     async def on_ready(self):
         self.log_setup()
