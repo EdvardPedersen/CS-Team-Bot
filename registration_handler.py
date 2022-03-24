@@ -83,7 +83,7 @@ class RegistrationHandler(GenericMessageHandler):
     @log
     async def message_banorder(self, message):
         if self.matchday.veto == "active":
-            await self.matchday.message.reply(":arrow_up:")
+            await self.matchday.banorder_message.reply(":arrow_up:")
         else:
             try:
                 m = await self.reply(message, self.matchday.banorder())
