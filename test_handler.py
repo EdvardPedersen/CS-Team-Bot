@@ -48,6 +48,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     handler = logging.FileHandler(log_file)        
     handler.setFormatter(formatter)
+    handler.setLevel(level)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -55,17 +56,6 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
-# first file logger
-logger = setup_logger('first_logger', 'first_logfile.log')
-logger.info('This is just info message')
-
-# second file logger
-super_logger = setup_logger('second_logger', 'second_logfile.log')
-super_logger.error('This is an error message')
-
-def another_method():
-   # using logger defined above also works here
-   logger.info('Inside method')
 class TestHandler(GenericMessageHandler):
     def __init__(self, help_text, response, reply_private):
         super().__init__(help_text, response, reply_private)
