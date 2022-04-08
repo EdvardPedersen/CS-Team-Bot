@@ -59,7 +59,7 @@ class CsBot(discord.Client):
         self.message_handlers.append(StupidityHandler(
             "Dad Jokes and Dank memes", "Dad jokes and memes", False))
         self.log.debug("stupidityHandler... OK")
-        testHandler = TestHandler("Public tests", "Not implemented", True)
+        testHandler = TestHandler("Public tests", "Not implemented", False)
         self.message_handlers.append(testHandler)
         self.reaction_handlers.append(testHandler)
         self.message_handlers.append(AdminHandler(self,"Admin handler","Not Implemented", True))
@@ -134,6 +134,7 @@ class CsBot(discord.Client):
 
     async def on_message(self, message):
         self.log.debug(f"Message:{message.content} from {message.author.id}")
+        self.log.warning(f"message:{message.content}")
         if message.author == self.user:
             return
         permissions = Permissions.restricted

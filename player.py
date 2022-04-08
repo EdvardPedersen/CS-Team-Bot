@@ -12,8 +12,12 @@ class Player:
         self.title = constants.ranks[self.rank]
         self.matches = 0
         self.maps = MapDict()
+        self.igl = False
         for map in constants.maps:
             self.maps[map] = 0
+
+    def set_igl(self, val:bool):
+        self.igl = val
 
     def set_rank(self, new_rank):
         self.rank = new_rank

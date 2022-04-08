@@ -201,6 +201,64 @@ class RegistrationHandler(GenericMessageHandler):
                 await self.reply(message, p.get_info())
             except KeyError:
                 await self.reply(message, "Please register")
+    
+    @member_check
+    @persist_state
+    @log
+    async def message_igl_add(self, message):
+        IDarg = re.match("^![a-zA-Z_]*\s*([\d]+)$", message.content)
+        NameArg = re.match("^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
+        if IDarg:
+            id = int(IDarg.group(1))
+            try:
+                p = self.player_pool[id]
+                p.set_igl(True)
+                await self.reply(message, f"{p.name} set to IGL")
+            except KeyError:
+                await self.reply(message, "Player not found")
+        elif NameArg:
+            name = NameArg.group(1)
+            for id, player in self.player_pool.items():
+                if name == player.name:
+                    player.set_igl(True)
+                    await self.reply(message, f"{player.name} set to IGL")
+                    break
+        else:
+            try:
+                p = self.player_pool[message.author.id]
+                p.set_igl(True)
+                await self.reply(message, f"{p.name} set to IGL")
+            except KeyError:
+                await self.reply(message, "Please register")
+
+    @member_check
+    @persist_state
+    @log
+    async def message_igl_remove(self, message):
+        IDarg = re.match("^![a-zA-Z_]*\s*([\d]+)$", message.content)
+        NameArg = re.match("^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
+        if IDarg:
+            id = int(IDarg.group(1))
+            try:
+                p = self.player_pool[id]
+                p.set_igl(False)
+                await self.reply(message, f"{p.name} set to IGL")
+            except KeyError:
+                await self.reply(message, "Player not found")
+        elif NameArg:
+            name = NameArg.group(1)
+            for id, player in self.player_pool.items():
+                if name == player.name:
+                    player.set_igl(False)
+                    await self.reply(message, f"{player.name} set to IGL")
+                    break
+        else:
+            try:
+                p = self.player_pool[message.author.id]
+                p.set_igl(False)
+                await self.reply(message, f"{p.name} set to IGL")
+            except KeyError:
+                await self.reply(message, "Please register")
 
     def _list_maps(self) -> str:
         mapslist = ""

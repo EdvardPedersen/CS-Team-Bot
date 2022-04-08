@@ -2,9 +2,10 @@ import random
 import logging
 import re
 from generic_message_handler import GenericMessageHandler
-from helper_functions import admin_check, infinite_sequence_gen
+from helper_functions import admin_check, infinite_sequence_gen, DiscordString
 from  match import MatchDay
 from player import Player
+from team import roll_teams
 
 '''
 Publicly available tests, callable from the discord client
@@ -60,6 +61,34 @@ class TestHandler(GenericMessageHandler):
     def __init__(self, help_text, response, reply_private):
         super().__init__(help_text, response, reply_private)
         self.log = setup_logger(self.__class__.__name__,f"{self.__class__.__name__}.log",logging.DEBUG)
+
+    @admin_check
+    @log
+    async def message_test_teamroll(self, message):
+        reply = DiscordString("")
+        num_matches = 2
+        num_players = 8
+        id_gen = infinite_sequence_gen()
+        players = {}
+        for i in range(num_players):
+            players[i] = Player.generate_random(next(id_gen))
+        igls = random.sample(sorted(players),k=3)
+        for igl in igls:
+            players[igl].set_igl(True)
+
+        teams = roll_teams(players, num_matches)
+        for id, team in teams.items():
+            reply += f"{team.get_info()}\n"
+        player_matches = {}
+        for team in teams.values():
+            for player in team.get_players():
+                if player.name not in player_matches.keys():
+                    player_matches[player.name] = 0
+                player_matches[player.name] += 1
+        for id,games in player_matches.items():
+            reply += f"Player[{id}]:{games}\n"
+        reply = reply.to_code_block("ml")
+        await self.reply(message, reply)
 
     @admin_check
     @log

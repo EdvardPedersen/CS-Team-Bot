@@ -19,7 +19,9 @@ class Team():
         self.calculate_overall_compatability()
 
     def get_info(self) -> str:
-        return f"Team{self.id}:{[player.name for player in self.players]}:[{self.rankcompatability}][{self.mapcompatability}][{self.overallcompatability}]\n"
+        igls = [player.name for player in self.players if player.igl]
+        members = [player.name for player in self.players if not player.igl]
+        return f"Team{self.id}: IGLs: {igls} Players: {members} [{self.rankcompatability}][{self.mapcompatability}][{self.overallcompatability}]\n"
 
     def set_map_preference(self):
         for map in constants.maps:
@@ -32,6 +34,9 @@ class Team():
 
     def get_banorder(self) -> list:
         return sorted(self.map_preference,key=self.map_preference.get)
+
+    def get_players(self)->list:
+        return [player for player in self.players]
 
     def generate_random():
         players = []
@@ -67,7 +72,15 @@ class Team():
 
 def _choose_players(players, team_size) -> list:
     chosen = []
+    
     for _ in range(team_size):
+        if len(chosen) == 0:
+            igls = [player for player in players if player.igl]
+            applicableIgls = [igl for igl in igls if igl.matches <= min(igl.matches for igl in igls) and igl not in chosen]
+            if applicableIgls:
+                igl = random.choice(applicableIgls)
+                chosen.append(igl)
+                continue
         applicable = [player for player in players if player.matches <= min(player.matches for player in players) and player not in chosen]
         if not applicable:
             applicable = [player for player in players if player not in chosen]
