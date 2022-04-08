@@ -79,6 +79,7 @@ def roll_teams(players, num_matches):
     player_pool = [player for player in players.values()]
     for player in player_pool:
         player.chosen = 0
+        player.matches = 0
 
     best_teams = {}
     team_size = constants.team_size if len(players) >= constants.team_size else len(players)
