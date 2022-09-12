@@ -1,17 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.10
 
-import pickle
-import datetime
-import random
-import re
 import os
+import logging
 import discord
-from pytube import Playlist
 from generic_message_handler import GenericMessageHandler
 from configuration import Configuration
 from registration_handler import RegistrationHandler
+from admin_handler import AdminHandler
 from constants import Permissions
 from stupid import StupidityHandler
+from test_handler import TestHandler
+
 '''
 Interface:
 
@@ -41,71 +40,140 @@ class CsBot(discord.Client):
         super().__init__(intents=intents)
         self.config = config
         self.broadcast_channel = None
+        self.log = None
         self.message_handlers = []
         self.reaction_handlers = []
-        registrationhandler = RegistrationHandler("Register new match","Not implemented",False)
+
+    async def handler_setup(self):
+        self.log.info("Setting up handlers..")
+        self.message_handlers.append(
+            GenericMessageHandler("???", "Not implemented", True))
+        self.log.debug("genericMessageHandler... OK")
+        registrationhandler = RegistrationHandler(
+            self.config.role, "server_players.db", "Register new match", "Not implemented", False, logging.INFO)
+        registrationhandler.teammembers = self.config.role
+        registrationhandler.broadcast_channel = self.broadcast_channel
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
-        self.message_handlers.append(StupidityHandler("Dad Jokes and Dank memes", "Dad jokes and memes", False))
-        self.message_handlers.append(GenericMessageHandler("???", "Not implemented",True))
+        self.log.debug("registrationHandler... OK")
+        self.message_handlers.append(StupidityHandler(
+            "Dad Jokes and Dank memes", "Dad jokes and memes", False, logging.WARNING))
+        self.log.debug("stupidityHandler... OK")
+        testHandler = TestHandler(
+            "Public tests", "Not implemented", False, logging.DEBUG)
+        self.message_handlers.append(testHandler)
+        self.reaction_handlers.append(testHandler)
+        self.message_handlers.append(AdminHandler(
+            self, "Admin handler", "Not Implemented", True, logging.DEBUG))
+        self.log.debug("testHandler... OK")
+        self.log.info("Handlers set up")
+
+    def log_setup(self):
+        log_format = "%(levelname)s %(name)s %(asctime)s - %(message)s"
+        formatter = logging.Formatter(log_format)
+        normal_handler = logging.FileHandler(
+            f"{self.__class__.__name__}.log", mode="w")
+        normal_handler.setFormatter(formatter)
+        normal_handler.setLevel(logging.WARNING)
+
+        debug_handler = logging.FileHandler(
+            f"{self.__class__.__name__}.debug.log", mode="w")
+        debug_handler.setFormatter(formatter)
+        debug_handler.setLevel(logging.DEBUG)
+
+        self.log = logging.getLogger()
+        self.log.setLevel(logging.DEBUG)
+        self.log.propagate = False
+        self.log.addHandler(normal_handler)
+        self.log.addHandler(debug_handler)
 
     async def on_ready(self):
-        self.config.role = await self.get_role()
+        self.log_setup()
+        self.log.info("Backend running")
+        self.config["role"] = await self.get_role()
+        self.log.debug("Role set")
         for channel in self.get_all_channels():
             if channel.name == self.config.broadcast_channel:
                 self.broadcast_channel = channel
-                # await self.broadcast_channel.send("Bot online")
-        
+                # await self.broadcast_channel.send("I'm back!")
+
         if not self.broadcast_channel:
-            print("Could not set broadcast_channel")
+            self.log.error(
+                f"Unable to set broadcast-channel: {self.config.broadcast_channel}")
+            await self.close()
+            exit(-1)
+
+        self.log.debug("Broadcast-channel setup")
+
+        await self.handler_setup()
+
+        self.log.info("Bot ready")
 
     async def get_role(self):
         for g in self.guilds:
             print(g)
             for r in g.roles:
                 print(r)
-                if r.id == self.config.team_role:
-                    self.config.guild = g
+                if r.id == self.config.team_role_ID:
                     print(r)
                     return r
 
     async def on_raw_reaction_add(self, reaction):
+        if reaction.member.id == self.user.id:
+            return
+        self.log.debug(f"Raw reaction add from {reaction.user_id}")
+        reaction.member = self.get_member(reaction.user_id)
+        if not reaction.member:
+            return
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
 
-    async def on_raw_reaction_remove(self, reaction):
-        members = self.get_all_members()
+    def get_member(self, id) -> discord.Member:
         member = None
-        for m in members:
-            if m.id == reaction.user_id:
+        for m in self.get_all_members():
+            if m.id == id:
                 member = m
-        if not member:
+                break
+        return member
+
+    async def on_raw_reaction_remove(self, reaction):
+        if reaction.member.id == self.user.id:
             return
-        reaction.member = member
+        self.log.debug(f"Raw reaction remove from: {reaction.user_id}")
+        reaction.member = self.get_member(reaction.user_id)
+        if not reaction.member:
+            return
         permissions = await self.get_permissions(reaction.member)
         for handler in self.reaction_handlers:
             await handler.dispatch(reaction, permissions)
 
     async def on_message(self, message):
         if message.author == self.user:
-            return  
+            return
         permissions = Permissions.restricted
-        if isinstance(message.channel,discord.TextChannel):
+        self.log.debug(f"Message from: {message.author.id}")
+        if isinstance(message.channel, discord.TextChannel):
             permissions = await self.get_permissions(message.author)
         elif isinstance(message.channel, discord.DMChannel):
-            for member in self.get_all_members():
-                if member.id == message.author.id:
-                    permissions = await self.get_permissions(member)
-                    break
+            member = self.get_member(message.author.id)
+            if member:
+                permissions = await self.get_permissions(member)
+
         for handler in self.message_handlers:
             await handler.dispatch(message, permissions)
 
     async def get_permissions(self, member):
-        if self.broadcast_channel.permissions_for(member).manage_roles:
+        if self.broadcast_channel.permissions_for(member).administrator:
+            self.log.debug(f"Admin: {member.name}")
             return Permissions.admin
+        elif self.broadcast_channel.permissions_for(member).manage_roles:
+            self.log.debug(f"Member: {member.name}")
+            return Permissions.member
         else:
+            self.log.debug(f"Unknown: {member.name}")
             return Permissions.restricted
+
 
 if __name__ == "__main__":
     token = ""
@@ -118,6 +186,5 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("Unable to read authToken")
 
-    config = Configuration()
-    client = CsBot(config)
+    client = CsBot(Configuration())
     client.run(token)

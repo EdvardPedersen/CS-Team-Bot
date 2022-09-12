@@ -3,9 +3,10 @@ from dadjokes import Dadjoke
 from generic_message_handler import GenericMessageHandler
 import random
 
+
 class StupidityHandler(GenericMessageHandler):
-    def __init__(self,help_text,response,reply_private=False):
-        super().__init__(help_text,response,reply_private)
+    def __init__(self, help_text, response, reply_private, log_level):
+        super().__init__(help_text, response, reply_private, log_level)
 
     def dad_jokes(self):
         ''' Returns a random dad joke '''
@@ -17,7 +18,8 @@ class StupidityHandler(GenericMessageHandler):
 
     def dank(self):
         ''' Returns a random dank video from a playlist on youtube '''
-        playlist = Playlist('https://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo')
+        playlist = Playlist(
+            'https://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo')
         yt = random.choice(playlist.videos)
         return(f"https://www.youtube.com/watch?v={yt.video_id}&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo")
 
