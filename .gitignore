@@ -4,3 +4,6 @@ admins
 config
 _*
 .*
+*.log
+*.json
+*.db

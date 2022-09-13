@@ -48,7 +48,7 @@ def euclidean_distance(val1, val2):
 
 def list_ranks() -> DiscordString:
     ranks = ""
-    for rank, title in ranks.items():
+    for rank, title in constants.ranks.items():
         ranks += f"{rank}:  {title}\n"
     return DiscordString(ranks)
 
