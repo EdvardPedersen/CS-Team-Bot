@@ -3,9 +3,16 @@ Discord bot for Counter-strike.
 
 # Interface
 ```
-!register [number of maps]{2} - start registration for next match(this week or next week default to wednesdays)
-- The bot gives a message that people react to to register
-- Manual stop of registration
+!commands
+- print list of available commands
+
+!register [number of maps]{2}
+  - start registration for next matchday
+  - 2 matches default override with argument
+  - wednesday default matchday, set with !playday
+  - 20:00 default playtime, set with !playtime
+  - The bot gives a message that people react to to register
+  - Manual stop of registration
 
 
 !cancel - cancel ongoing registration for next match
@@ -17,33 +24,86 @@ Discord bot for Counter-strike.
 !next - show information for next match registrated
   - The bot post a message to the broadcast channel
 
-- After registration, registered users can PM bot to set map preferences with
-!maps
-- The bots prompts the user with a expected format for map order
-
-!maps <[map,map1,map2...mapN]>
-- The bot assigns scoring to the player's list of maps. If the list is incomplete, the bot will assign 0 values as default
+!maps [map,map1,map2...mapN]
+- if no arg:
+  - The bots prompts the user with a expected format for map order
+- else:
+  - The bot assigns scoring to the player's list of maps. If the list is incomplete, the bot will assign 0 values as default
 
 !teams
-- The bot rolls teams for matches
-- Teams are assigned a pool of maps they will play based on preferences
-- Balanced by rank and map pool
-- Ban order is decided
+  - if match:
+    - return information for current rolled teams
+  - else:
+    - No match found
 
 !banorder
 - The bot calculates a best shared banorder for all teams in the veto
 - Give a list of maps and how high each team score for each map
 
 !ban <map>
-- Ban map from veto, with new best shared banorder
+- Ban map from veto, updates shared banorder
 
 !unban <map>
-- Unban map from veto, with new best shared banorder
+- Unban map from veto, updates shared banorder
 
 !pick <map>
-- Pick map in veto, with new best shared banorder
+- Pick map in veto, updates shared banorder
 
 !unpick <map>
-- Unpick map in veto, with new best shared banorder
+- Unpick map in veto, updates shared banorder
+
+!dad
+  - Post random dad-joke
+
+!dank
+  - Post dank-meme from youtube
+
+!igl_add <name/ID>
+  - Add given user to list of IGLs
+  - Argument either discord name or discord ID
+
+!igl_remove <name/ID>
+  - Remove given user from list of IGLs
+  - Argument either discord name or discord ID
+
+!list_active_duty
+  - List current active_duty
+  - Manually maintaned in the repo
+    - Found in constants.py
+
+!list_players
+  - List information about all players registered to the bot
+    - rank and map-preference
+
+!list_ranks
+  - list all ranks with name and ID
+    - ID used when setting ranks for players
+
+!playday [day of week]
+  - If no arg:
+    - return current set playday
+  - else:
+    - set given day of week as playday
+
+!playtime [xx:xx]
+  - if no arg:
+    - return current set playtime
+  - else:
+    - set given time as playtime
+
+!player_info [name/ID]
+  - if no arg:
+    - return information for requesting player
+  - else:
+    - return information for given player[name/ID] if found
+  - error:
+    - Not found
+    - Please register
+
+!rank [1-18]
+  - set your in-game rank
+
+
+
 
 ```
