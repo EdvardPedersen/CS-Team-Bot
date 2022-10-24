@@ -1,6 +1,13 @@
 # CS-Team-Bot
 Discord bot for Counter-strike. 
 
+# Setup
+- Auth
+  - Head over to: https://discord.com/developers/applications
+  - Create a new application
+  - Under 'Bot' add new bot
+  - Take the token and paste it into a file('auth') in the same folder as bot.py
+
 # Interface
 ```
 !commands
