@@ -138,7 +138,7 @@ class CsBot(discord.Client):
         return member
 
     async def on_raw_reaction_remove(self, reaction):
-        if reaction.member.id == self.user.id:
+        if reaction.user_id == self.user.id:
             return
         self.log.debug(f"Raw reaction remove from: {reaction.user_id}")
         reaction.member = self.get_member(reaction.user_id)
