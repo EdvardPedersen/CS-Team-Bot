@@ -1,6 +1,7 @@
 import datetime
 import constants
 import re
+import CSGO_GET_ACTIVE_DUTY
 from team import roll_teams
 from helper_functions import DiscordString
 from mapdict import MapDict
@@ -32,11 +33,11 @@ class MatchDay():
         self.date = None
         self.playtime = datetime.time(hour=20, minute=00)
         self.playday = playday
-        self.map_pool = constants.maps
+        self.map_pool = CSGO_GET_ACTIVE_DUTY.get_active_duty()
         self.banned_maps = []
         self.picked_maps = []
         self.shared_banorder = []
-        self.available_maps = constants.maps.copy()
+        self.available_maps = self.map_pool.copy()
         self.weekdays = {
             'Monday': 0,
             'Tuesday': 1,
@@ -132,7 +133,7 @@ class MatchDay():
         self.teams = None
         self.banned_maps = []
         self.picked_maps = []
-        self.available_maps = constants.maps.copy()
+        self.available_maps = self.map_pool.copy()
         self.status = "ready"
 
     async def delete(self):
@@ -253,7 +254,7 @@ class MatchDay():
         'private_banorders': dict{teamID<int> : Banorder<DiscordString>),..}  empty or more messages with teamID and their private banorder
         'shared_banorder': <DiscordString> empty or one message with shared  banorder for  all teams in  current  veto 
         'banned_maps': <DiscordString> empty or one  message with currently banned maps  in this veto
-        'picked_maps': <DiscordString> empty or one  message with currently picked maps  in this veto
+        'picked_maps': <DiscordString> empty or one  message with currently picked   in this veto
         'team_fit':  <DiscordString> empty or one message with team score for each map picked in veto
         '''
         messages = {

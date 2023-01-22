@@ -1,6 +1,7 @@
 import math
 import discord
 import constants
+import CSGO_GET_ACTIVE_DUTY
 
 
 class DiscordString(str):
@@ -55,7 +56,7 @@ def list_ranks() -> DiscordString:
 
 def list_active_duty() -> DiscordString:
     reply = "Active duty maps: | "
-    for map in constants.maps:
+    for map in CSGO_GET_ACTIVE_DUTY.get_active_duty():
         reply += f"{map} |"
     reply += "\n"
     return DiscordString(reply)

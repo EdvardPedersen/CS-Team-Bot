@@ -1,4 +1,4 @@
-import constants
+import CSGO_GET_ACTIVE_DUTY
 import logging
 import traceback
 
@@ -41,7 +41,7 @@ class MapDict(dict):
     def to_list_sorted(self, reversed=False):
         return sorted(self, key=self.get, reverse=reversed)
 
-    def top_n_maps(self, n=len(constants.maps)):
+    def top_n_maps(self, n=len(CSGO_GET_ACTIVE_DUTY.get_active_duty())):
         return sorted(self, key=self.get, reverse=True)[:n]
 
     def copy(self):

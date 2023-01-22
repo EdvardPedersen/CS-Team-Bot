@@ -1,4 +1,3 @@
-maps = ["Dust2", "Mirage", "Vertigo", "Nuke", "Ancient", "Inferno", "Overpass"]
 ranks = {
     1: "Silver I",
     2: "Silver II",
