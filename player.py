@@ -1,8 +1,10 @@
 import constants
 import random
 
+from CSGO_GET_ACTIVE_DUTY import get_active_duty
 from helper_functions import euclidean_distance, DiscordString
 from mapdict import MapDict
+
 
 class Player:
     def __init__(self, id, name):
@@ -13,10 +15,10 @@ class Player:
         self.matches = 0
         self.maps = MapDict()
         self.igl = False
-        for map in constants.maps:
+        for map in get_active_duty():
             self.maps[map] = 0
 
-    def set_igl(self, val:bool):
+    def set_igl(self, val: bool):
         self.igl = val
 
     def set_rank(self, new_rank):
@@ -28,7 +30,7 @@ class Player:
 
     def get_map_ranking(self) -> str:
         ranking = ""
-        for map,value in self.maps.items():
+        for map, value in self.maps.items():
             ranking += f"{map}: {value}\n"
         return ranking
 
@@ -48,16 +50,16 @@ class Player:
 
     def map_compatability(self, player) -> float:
         diff = 0
-        for  map in  constants.maps:
-            diff  += euclidean_distance(self.maps[map], player.maps[map])
+        for map in get_active_duty():
+            diff += euclidean_distance(self.maps[map], player.maps[map])
         return diff
 
-    def generate_random(id=random.randint(0,0xFFFFFFFF)):
-        player = Player(id,str(id))
-        player.rank = random.randint(1,18)
+    def generate_random(id=random.randint(0, 0xFFFFFFFF)):
+        player = Player(id, str(id))
+        player.rank = random.randint(1, 18)
         player.maps = {}
-        map_pool = random.sample(constants.maps,k=len(constants.maps))
-        for i,map in enumerate(map_pool):
+        map_pool = random.sample(get_active_duty(), k=len(get_active_duty()))
+        for i, map in enumerate(map_pool):
             player.maps[map] = i
 
         return player

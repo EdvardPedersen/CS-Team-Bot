@@ -2,6 +2,7 @@ import math
 import statistics
 import constants
 import random
+from CSGO_GET_ACTIVE_DUTY import get_active_duty
 from player import Player
 from mapdict import MapDict
 
@@ -25,7 +26,7 @@ class Team():
         return f"Team{self.id}:\n\t IGLs: {igls}\n\t Players: {members} [{self.rankcompatability}][{self.mapcompatability}][{self.overallcompatability}]\n"
 
     def set_map_preference(self):
-        for map in constants.maps:
+        for map in get_active_duty():
             self.map_preference[map] = 0
             for player in self.players:
                 self.map_preference[map] += player.maps[map]
@@ -65,7 +66,7 @@ class Team():
                 total_distance += player.map_compatability(other_player)
         try:
             self.mapcompatability = round(
-                (total_distance/(len(constants.maps)*len(self.players))), 3)
+                (total_distance/(len(get_active_duty())*len(self.players))), 3)
         except ZeroDivisionError:
             self.mapcompatability = total_distance
 
