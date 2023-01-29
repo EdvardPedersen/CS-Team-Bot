@@ -147,7 +147,7 @@ class RegistrationHandler(GenericMessageHandler):
         if self.matchday.message and self.matchday.message.id == reaction.message_id:
             if reaction.user_id not in self.player_pool:
                 self.player_pool[reaction.user_id] = Player(
-                    reaction.user_id, reaction.member.name)
+                    reaction.user_id, reaction.member.name, reaction.member.nick)
                 await reaction.member.send("Please register your rank with '!rank' and map-preferences with '!maps'")
 
     def rank_list(self):

@@ -79,8 +79,9 @@ class MatchDay():
         reply = ""
         if self.status == "open":
             for reaction in self.message.reactions:
-                for u in await reaction.users().flatten():
-                    self.player_add(player_pool[u.id])
+                u = [u async for u in reaction.users()]
+                for users in u:
+                    self.player_add(player_pool[users.id])
             if not self.teams:
                 self.teams = roll_teams(self.players, self.num_matches)
                 self.matches = [Match(self.date, team) for team in self.teams]

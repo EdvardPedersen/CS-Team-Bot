@@ -7,8 +7,9 @@ from mapdict import MapDict
 
 
 class Player:
-    def __init__(self, id, name):
+    def __init__(self, id, name, sname):
         self.id = id
+        self.screen_name = sname
         self.name = name
         self.rank = 1
         self.title = constants.ranks[self.rank]

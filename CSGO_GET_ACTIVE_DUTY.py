@@ -1,4 +1,5 @@
 import requests
+from functools import cache
 
 
 URL = 'https://counterstrike.fandom.com/wiki/Category:Active_Duty_Group'
@@ -8,7 +9,7 @@ def get_page(url):
     page = requests.get(url)
     return page.text
 
-
+@cache
 def get_active_duty():
     page = get_page(URL)
     lines = page.splitlines()
