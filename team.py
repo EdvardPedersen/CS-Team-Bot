@@ -21,8 +21,8 @@ class Team():
         self.calculate_overall_compatability()
 
     def get_info(self) -> str:
-        igls = [player.name for player in self.players if player.igl]
-        members = [player.name for player in self.players if not player.igl]
+        igls = [player.screen_name for player in self.players if player.igl]
+        members = [player.screen_name for player in self.players if not player.igl]
         return f"Team{self.id}:\n\t IGLs: {igls}\n\t Players: {members} [{self.rankcompatability}][{self.mapcompatability}][{self.overallcompatability}]\n"
 
     def set_map_preference(self):

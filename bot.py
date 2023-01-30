@@ -37,6 +37,7 @@ class CsBot(discord.Client):
         intents = discord.Intents.default()
         intents.members = True
         intents.reactions = True
+        intents.message_content = True
         super().__init__(intents=intents)
         self.config = config
         self.broadcast_channel = None
