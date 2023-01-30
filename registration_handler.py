@@ -145,9 +145,18 @@ class RegistrationHandler(GenericMessageHandler):
     @log_message
     async def reaction_add(self, reaction):
         if self.matchday.message and self.matchday.message.id == reaction.message_id:
-            if reaction.user_id not in self.player_pool:
-                self.player_pool[reaction.user_id] = Player(
-                    reaction.user_id, reaction.member.name, reaction.member.nick)
+            if reaction.user_id in self.player_pool:
+                if reaction.member.nick != None:
+                    self.player_pool[reaction.user_id].screen_name = reaction.member.nick
+                else:
+                    self.player_pool[reaction.user_id].screen_name = reaction.member.name
+            elif reaction.user_id not in self.player_pool:
+                if reaction.member.nick == None:
+                    self.player_pool[reaction.user_id] = Player(
+                        reaction.user_id, reaction.member.name, reaction.member.name)
+                else:    
+                    self.player_pool[reaction.user_id] = Player(
+                        reaction.user_id, reaction.member.name, reaction.member.nick)
                 await reaction.member.send("Please register your rank with '!rank' and map-preferences with '!maps'")
 
     def rank_list(self):
