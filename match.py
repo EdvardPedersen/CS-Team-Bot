@@ -165,7 +165,7 @@ class MatchDay():
         teams = DiscordString("")
         for i, team in self.teams.items():
             teams += team.get_info()
-        teams = teams.to_code_block("ml")
+        teams = teams.to_code_block("arm")
         return teams
 
     def banorder_formatted_message(self, format_type):
