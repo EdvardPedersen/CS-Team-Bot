@@ -9,6 +9,7 @@ def get_page(url):
     page = requests.get(url)
     return page.text
 
+
 @cache
 def get_active_duty():
     page = get_page(URL)

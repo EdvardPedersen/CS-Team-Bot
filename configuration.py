@@ -68,9 +68,9 @@ class Configuration(abc.MutableMapping):
             raise e.with_traceback(e.__traceback__)
 
     def setup(self):
-        self.log.debug("Configuration  setup")
+        self.log.debug("Configuration setup")
         loaded = False
-        while(not loaded):
+        while (not loaded):
             try:
                 self.load()
                 loaded = True

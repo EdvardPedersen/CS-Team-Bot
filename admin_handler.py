@@ -1,4 +1,3 @@
-import logging
 import datetime
 import inspect
 import re
@@ -33,7 +32,7 @@ class AdminHandler(GenericMessageHandler):
     @admin_check
     @log_message
     async def message_playday(self, message):
-        args = re.match("^![a-zA-Z]+\s([a-zA-Z]+)$", message.content)
+        args = re.match(r"^![a-zA-Z]+\s([a-zA-Z]+)$", message.content)
         reg_handler = self._get_message_handler(RegistrationHandler)
         if not args:
             return
@@ -49,7 +48,7 @@ class AdminHandler(GenericMessageHandler):
     @admin_check
     @log_message
     async def message_playtime(self, message):
-        args = re.match("^![a-zA-Z]+\s(\d{2}):(\d{2})",  message.content)
+        args = re.match(r"^![a-zA-Z]+\s(\d{2}):(\d{2})", message.content)
         handler = self._get_message_handler(RegistrationHandler)
         if not args:
             return

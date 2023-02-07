@@ -44,7 +44,7 @@ def infinite_sequence_gen():
 
 
 def euclidean_distance(val1, val2):
-    return math.sqrt((val1-val2)**2)
+    return math.sqrt((val1 - val2)**2)
 
 
 def list_ranks() -> DiscordString:

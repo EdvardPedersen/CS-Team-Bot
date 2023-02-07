@@ -7,7 +7,7 @@ class MapDict(dict):
 
     def amplify_most_wanted(self):
         factor = len(self.keys())
-        weights = [16*factor, 8*factor, 4*factor]
+        weights = [16 * factor, 8 * factor, 4 * factor]
         nmaps = 3
         top_n = self.top_n_maps(nmaps)
         for i, map in enumerate(top_n):

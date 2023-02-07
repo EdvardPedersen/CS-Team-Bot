@@ -1,5 +1,4 @@
 import datetime
-import constants
 import re
 import CSGO_GET_ACTIVE_DUTY
 from team import roll_teams
@@ -94,7 +93,7 @@ class MatchDay():
         return reply
 
     def registration_start(self, arguments, teammember_role):
-        arguments = re.match("^![a-zA-Z]*\s(\d{1,2})$", arguments)
+        arguments = re.match(r"^![a-zA-Z]*\s(\d{1,2})$", arguments)
         if arguments:
             num_matches = int(arguments.group(1))
             if num_matches < 1:
@@ -252,8 +251,8 @@ class MatchDay():
     def _get_banorder_info(self):
         '''
         Returns  dictionary with formatting:
-        'private_banorders': dict{teamID<int> : Banorder<DiscordString>),..}  empty or more messages with teamID and their private banorder
-        'shared_banorder': <DiscordString> empty or one message with shared  banorder for  all teams in  current  veto 
+        'private_banorders': dict{teamID<int> : Banorder<DiscordString>),..} empty or more messages with teamID and their private banorder
+        'shared_banorder': <DiscordString> empty or one message with shared banorder for  all teams in  current  veto
         'banned_maps': <DiscordString> empty or one  message with currently banned maps  in this veto
         'picked_maps': <DiscordString> empty or one  message with currently picked   in this veto
         'team_fit':  <DiscordString> empty or one message with team score for each map picked in veto

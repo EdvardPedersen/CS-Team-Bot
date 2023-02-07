@@ -146,15 +146,15 @@ class RegistrationHandler(GenericMessageHandler):
     async def reaction_add(self, reaction):
         if self.matchday.message and self.matchday.message.id == reaction.message_id:
             if reaction.user_id in self.player_pool:
-                if reaction.member.nick != None:
+                if reaction.member.nick is not None:
                     self.player_pool[reaction.user_id].screen_name = reaction.member.nick
                 else:
                     self.player_pool[reaction.user_id].screen_name = reaction.member.name
             elif reaction.user_id not in self.player_pool:
-                if reaction.member.nick == None:
+                if reaction.member.nick is None:
                     self.player_pool[reaction.user_id] = Player(
                         reaction.user_id, reaction.member.name, reaction.member.name)
-                else:    
+                else:
                     self.player_pool[reaction.user_id] = Player(
                         reaction.user_id, reaction.member.name, reaction.member.nick)
                 await reaction.member.send("Please register your rank with '!rank' and map-preferences with '!maps'")
@@ -169,7 +169,7 @@ class RegistrationHandler(GenericMessageHandler):
     @persist_state
     @log_message
     async def message_rank(self, message):
-        res = re.match("^![a-zA-Z]+\s(\d{1,})", message.content)
+        res = re.match(r"^![a-zA-Z]+\s(\d{1,})", message.content)
         if not res:
             await message.author.send("Please set rank with '!rank ' followed by rank number")
             await message.author.send(f"Ranks:\n{self.rank_list()}")
@@ -194,8 +194,8 @@ class RegistrationHandler(GenericMessageHandler):
     @member_check
     @log_message
     async def message_player_info(self, message):
-        IDarg = re.match("^![a-zA-Z_]*\s*([\d]+)$", message.content)
-        NameArg = re.match("^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
+        IDarg = re.match(r"^![a-zA-Z_]*\s*([\d]+)$", message.content)
+        NameArg = re.match(r"^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
         if IDarg:
             id = int(IDarg.group(1))
             try:
@@ -220,8 +220,8 @@ class RegistrationHandler(GenericMessageHandler):
     @persist_state
     @log_message
     async def message_igl_add(self, message):
-        IDarg = re.match("^![a-zA-Z_]*\s*([\d]+)$", message.content)
-        NameArg = re.match("^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
+        IDarg = re.match(r"^![a-zA-Z_]*\s*([\d]+)$", message.content)
+        NameArg = re.match(r"^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
         if IDarg:
             id = int(IDarg.group(1))
             try:
@@ -249,8 +249,8 @@ class RegistrationHandler(GenericMessageHandler):
     @persist_state
     @log_message
     async def message_igl_remove(self, message):
-        IDarg = re.match("^![a-zA-Z_]*\s*([\d]+)$", message.content)
-        NameArg = re.match("^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
+        IDarg = re.match(r"^![a-zA-Z_]*\s*([\d]+)$", message.content)
+        NameArg = re.match(r"^![a-zA-Z_]+\s+([a-zA-Z\d]+)$", message.content)
         if IDarg:
             id = int(IDarg.group(1))
             try:

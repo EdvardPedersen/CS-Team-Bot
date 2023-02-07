@@ -1,6 +1,5 @@
 import random
 import logging
-import re
 from generic_message_handler import GenericMessageHandler
 from helper_functions import admin_check, infinite_sequence_gen, DiscordString, log_message
 from match import MatchDay
@@ -137,6 +136,6 @@ class TestHandler(GenericMessageHandler):
                     await matchday.pick(map)
             self.log.debug(matchday.banorder())
 
-        log = f"\n~~Veto Result~~\n"
+        log = "\n~~Veto Result~~\n"
         log += f"{matchday.banorder()}"
         await self.reply(message, log)

@@ -11,7 +11,7 @@ class StupidityHandler(GenericMessageHandler):
     def dad_jokes(self):
         ''' Returns a random dad joke '''
         msg = Dadjoke().joke
-        return(msg)
+        return (msg)
 
     async def message_dad(self, message, permission):
         await self.reply(message, self.dad_jokes())
@@ -21,7 +21,7 @@ class StupidityHandler(GenericMessageHandler):
         playlist = Playlist(
             'https://www.youtube.com/watch?v=q6EoRBvdVPQ&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo')
         yt = random.choice(playlist.videos)
-        return(f"https://www.youtube.com/watch?v={yt.video_id}&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo")
+        return (f"https://www.youtube.com/watch?v={yt.video_id}&list=PLFsQleAWXsj_4yDeebiIADdH5FMayBiJo")
 
     async def message_dank(self, message, permission):
         await self.reply(message, self.dank())

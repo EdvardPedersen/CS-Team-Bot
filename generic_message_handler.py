@@ -31,15 +31,15 @@ class GenericMessageHandler:
             if result:
                 group = result.group(1)
                 for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
-                    if name == self.message_prefix+group:
+                    if name == self.message_prefix + group:
                         await method(message, permission)
         if isinstance(message, discord.RawReactionActionEvent):
             match message.event_type:
                 case 'REACTION_ADD':
                     for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
-                        if name == self.reaction_prefix+"add":
+                        if name == self.reaction_prefix + "add":
                             await method(message, permission)
                 case "REACTION_REMOVE":
                     for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
-                        if name == self.reaction_prefix+"remove":
+                        if name == self.reaction_prefix + "remove":
                             await method(message, permission)

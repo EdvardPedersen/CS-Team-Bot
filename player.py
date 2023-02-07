@@ -47,7 +47,7 @@ class Player:
         return s
 
     def rank_compatability(self, player) -> float:
-        return euclidean_distance(self.rank,  player.rank)
+        return euclidean_distance(self.rank, player.rank)
 
     def map_compatability(self, player) -> float:
         diff = 0
