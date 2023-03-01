@@ -10,8 +10,9 @@ from admin_handler import AdminHandler
 from constants import Permissions
 from stupid import StupidityHandler
 from test_handler import TestHandler
+from open_ai_handler import GTPHandler
 
-'''
+"""
 Interface:
 
 !register - start registration for next match(this week or next week default to wednesdays)
@@ -29,7 +30,7 @@ Interface:
 - Teams are assigned a pool of maps they will play based on preferences
 - Balanced by rank and map pool
 - Ban order is decided
-'''
+"""
 
 
 class CsBot(discord.Client):
@@ -48,37 +49,56 @@ class CsBot(discord.Client):
     async def handler_setup(self):
         self.log.info("Setting up handlers..")
         self.message_handlers.append(
-            GenericMessageHandler("???", "Not implemented", True))
+            GenericMessageHandler("???", "Not implemented", True)
+        )
         self.log.debug("genericMessageHandler... OK")
         registrationhandler = RegistrationHandler(
-            self.config.role, "server_players.db", "Register new match", "Not implemented", False, logging.INFO)
+            self.config.role,
+            "server_players.db",
+            "Register new match",
+            "Not implemented",
+            False,
+            logging.INFO,
+        )
         registrationhandler.teammembers = self.config.role
         registrationhandler.broadcast_channel = self.broadcast_channel
         self.message_handlers.append(registrationhandler)
         self.reaction_handlers.append(registrationhandler)
         self.log.debug("registrationHandler... OK")
-        self.message_handlers.append(StupidityHandler(
-            "Dad Jokes and Dank memes", "Dad jokes and memes", False, logging.WARNING))
+        self.message_handlers.append(
+            StupidityHandler(
+                "Dad Jokes and Dank memes",
+                "Dad jokes and memes",
+                False,
+                logging.WARNING,
+            )
+        )
         self.log.debug("stupidityHandler... OK")
         testHandler = TestHandler(
-            "Public tests", "Not implemented", False, logging.DEBUG)
+            "Public tests", "Not implemented", False, logging.DEBUG
+        )
         self.message_handlers.append(testHandler)
         self.reaction_handlers.append(testHandler)
-        self.message_handlers.append(AdminHandler(
-            self, "Admin handler", "Not Implemented", True, logging.DEBUG))
+        self.message_handlers.append(
+            AdminHandler(self, "Admin handler", "Not Implemented", True, logging.DEBUG)
+        )
         self.log.debug("testHandler... OK")
+        self.message_handlers.append(
+            GTPHandler("ChatGPT", "Not implemented", False, logging.WARNING)
+        )
+        self.log.debug("GTPHandler... OK")
         self.log.info("Handlers set up")
 
     def log_setup(self):
         log_format = "%(levelname)s %(name)s %(asctime)s - %(message)s"
         formatter = logging.Formatter(log_format)
-        normal_handler = logging.FileHandler(
-            f"{self.__class__.__name__}.log", mode="w")
+        normal_handler = logging.FileHandler(f"{self.__class__.__name__}.log", mode="w")
         normal_handler.setFormatter(formatter)
         normal_handler.setLevel(logging.WARNING)
 
         debug_handler = logging.FileHandler(
-            f"{self.__class__.__name__}.debug.log", mode="w")
+            f"{self.__class__.__name__}.debug.log", mode="w"
+        )
         debug_handler.setFormatter(formatter)
         debug_handler.setLevel(logging.DEBUG)
 
@@ -100,7 +120,8 @@ class CsBot(discord.Client):
 
         if not self.broadcast_channel:
             self.log.error(
-                f"Unable to set broadcast-channel: {self.config.broadcast_channel}")
+                f"Unable to set broadcast-channel: {self.config.broadcast_channel}"
+            )
             await self.close()
             exit(-1)
 
