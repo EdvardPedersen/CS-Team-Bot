@@ -1,0 +1,4 @@
+pytube
+discord
+dadjokes
+openai
